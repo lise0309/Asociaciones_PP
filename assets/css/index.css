@@ -31,8 +31,8 @@
   --radius-lg: 20px;
   --radius-xl: 28px;
   --radius-full: 9999px;
-  --font-serif: 'Playfair Display', serif;
-  --font-sans: 'Poppins', 'Inter', sans-serif;  /* ← SOLO CAMBIÉ ESTO */
+  --font-serif: 'Inter', sans-serif;
+  --font-sans: 'Inter', sans-serif;
   --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
