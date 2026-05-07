@@ -1,0 +1,98 @@
+2026-05-07 03:02:11 - ========== NUEVA SOLICITUD ==========
+2026-05-07 03:02:11 - METHOD: POST
+2026-05-07 03:02:11 - POST data: Array
+(
+    [accion] => crear
+    [propiedad_id] => 
+    [titulo] => local
+    [tipo_inmueble] => 3
+    [tipo_negocio] => 6
+    [precio] => 4545
+    [condicion] => Excelente estado
+    [descripcion] => local en buen estadoi
+    [departamento] => Cabañas
+    [municipio] => cabañas oeste
+    [direccion] => ilobasco
+    [latitud] => 
+    [longitud] => 
+    [referencia] => 
+    [habitaciones] => 0
+    [banos] => 0
+    [estacionamiento] => 0
+    [metros_construccion] => 
+    [metros_terreno] => -0.08
+    [visibilidad] => publica
+    [destacar_radio] => 0
+    [destacar] => 0
+)
+
+2026-05-07 03:02:11 - FILES data: Array
+(
+    [fotos] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+)
+
+2026-05-07 03:02:11 - Vendedor ID: 660ac389-483a-11f1-9f5d-0a002700000f
+2026-05-07 03:02:11 - Acción: crear
+2026-05-07 03:02:11 - Propiedad ID: 
+2026-05-07 03:02:11 - Datos preparados: Array
+(
+    [vendedor_id] => 660ac389-483a-11f1-9f5d-0a002700000f
+    [tipo_inmueble_id] => 3
+    [tipo_negocio_id] => 6
+    [titulo] => local
+    [descripcion] => local en buen estadoi
+    [precio] => 4545
+    [habitaciones] => 0
+    [banos] => 0
+    [metros_construccion] => 
+    [metros_terreno] => -0.08
+    [estacionamiento] => 0
+    [piscina] => 0
+    [amueblado] => 0
+    [destacar] => 0
+    [departamento] => Cabañas
+    [municipio] => cabañas oeste
+    [direccion] => ilobasco
+    [referencia] => 
+    [latitud] => 
+    [longitud] => 
+    [estado_publicacion_id] => 11
+)
+
+2026-05-07 03:02:11 - Intentando CREAR propiedad...
+2026-05-07 03:02:11 - Resultado crear: b9b4aa85-3766-462b-97f0-886dbf589052
+2026-05-07 03:02:11 - Propiedad creada con ID: b9b4aa85-3766-462b-97f0-886dbf589052
+2026-05-07 03:02:11 - Redirigiendo a mis_propiedades.php

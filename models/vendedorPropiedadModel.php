@@ -1,21 +1,28 @@
 <?php
 /**
- * MODELO PROPIEDAD
+ * MODELO PROPIEDAD PARA VENDEDOR
  * PP Bienes Raíces
  */
 
 require_once __DIR__ . '/../config/database.php';
 
-class PropiedadModel {
+class VendedorPropiedadModel {
     private PDO $db;
 
     public function __construct() {
         $this->db = Database::conectar();
     }
 
-    /**
-     * Crear nueva propiedad
-     */
+    private function generarUUID(): string {
+        return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+        );
+    }
+
     public function crear(array $datos): string|false {
         try {
             $id = $this->generarUUID();
@@ -27,7 +34,7 @@ class PropiedadModel {
                 metros_construccion, metros_terreno, tiene_estacionamiento,
                 tiene_piscina, viene_amueblado, es_anuncio_destacado,
                 departamento, municipio, direccion_exacta, punto_referencia,
-                latitud, longitud, fecha_publicacion
+                latitud, longitud
             ) VALUES (
                 :id, :vendedor_id, :tipo_inmueble_id, :tipo_negocio_id,
                 :estado_publicacion_id, :titulo_anuncio, :descripcion_detallada,
@@ -35,47 +42,43 @@ class PropiedadModel {
                 :metros_construccion, :metros_terreno, :tiene_estacionamiento,
                 :tiene_piscina, :viene_amueblado, :es_anuncio_destacado,
                 :departamento, :municipio, :direccion_exacta, :punto_referencia,
-                :latitud, :longitud, :fecha_publicacion
+                :latitud, :longitud
             )";
             
             $stmt = $this->db->prepare($sql);
             
-            $stmt->execute([
+            $resultado = $stmt->execute([
                 ':id' => $id,
                 ':vendedor_id' => $datos['vendedor_id'],
                 ':tipo_inmueble_id' => $datos['tipo_inmueble_id'],
                 ':tipo_negocio_id' => $datos['tipo_negocio_id'],
-                ':estado_publicacion_id' => $datos['estado_publicacion_id'] ?? 10, // Pendiente aprobación
+                ':estado_publicacion_id' => $datos['estado_publicacion_id'] ?? 10,
                 ':titulo_anuncio' => $datos['titulo'],
-                ':descripcion_detallada' => $datos['descripcion'] ?? '',
+                ':descripcion_detallada' => $datos['descripcion'],
                 ':precio_pedido' => $datos['precio'],
-                ':num_habitaciones' => $datos['habitaciones'] ?? 0,
-                ':num_banos' => $datos['banos'] ?? 0,
-                ':metros_construccion' => $datos['metros_construccion'] ?? null,
-                ':metros_terreno' => $datos['metros_terreno'] ?? null,
-                ':tiene_estacionamiento' => $datos['estacionamiento'] > 0 ? 1 : 0,
-                ':tiene_piscina' => isset($datos['piscina']) ? 1 : 0,
-                ':viene_amueblado' => isset($datos['amueblado']) ? 1 : 0,
-                ':es_anuncio_destacado' => isset($datos['destacar']) ? 1 : 0,
+                ':num_habitaciones' => $datos['habitaciones'],
+                ':num_banos' => $datos['banos'],
+                ':metros_construccion' => $datos['metros_construccion'],
+                ':metros_terreno' => $datos['metros_terreno'],
+                ':tiene_estacionamiento' => $datos['estacionamiento'],
+                ':tiene_piscina' => $datos['piscina'],
+                ':viene_amueblado' => $datos['amueblado'],
+                ':es_anuncio_destacado' => $datos['destacar'],
                 ':departamento' => $datos['departamento'],
                 ':municipio' => $datos['municipio'],
                 ':direccion_exacta' => $datos['direccion'],
-                ':punto_referencia' => $datos['referencia'] ?? null,
-                ':latitud' => !empty($datos['latitud']) ? $datos['latitud'] : null,
-                ':longitud' => !empty($datos['longitud']) ? $datos['longitud'] : null,
-                ':fecha_publicacion' => $datos['fecha_publicacion'] ?? date('Y-m-d H:i:s')
+                ':punto_referencia' => $datos['referencia'],
+                ':latitud' => $datos['latitud'],
+                ':longitud' => $datos['longitud']
             ]);
             
-            return $id;
+            return $resultado ? $id : false;
         } catch (PDOException $e) {
             error_log("Error al crear propiedad: " . $e->getMessage());
             return false;
         }
     }
 
-    /**
-     * Actualizar propiedad existente
-     */
     public function actualizar(string $id, array $datos): bool {
         try {
             $sql = "UPDATE propiedades SET 
@@ -98,31 +101,32 @@ class PropiedadModel {
                 punto_referencia = :punto_referencia,
                 latitud = :latitud,
                 longitud = :longitud
-                WHERE id = :id";
+                WHERE id = :id AND vendedor_id = :vendedor_id";
             
             $stmt = $this->db->prepare($sql);
             
             return $stmt->execute([
                 ':id' => $id,
+                ':vendedor_id' => $datos['vendedor_id'],
                 ':tipo_inmueble_id' => $datos['tipo_inmueble_id'],
                 ':tipo_negocio_id' => $datos['tipo_negocio_id'],
                 ':titulo_anuncio' => $datos['titulo'],
-                ':descripcion_detallada' => $datos['descripcion'] ?? '',
+                ':descripcion_detallada' => $datos['descripcion'],
                 ':precio_pedido' => $datos['precio'],
-                ':num_habitaciones' => $datos['habitaciones'] ?? 0,
-                ':num_banos' => $datos['banos'] ?? 0,
-                ':metros_construccion' => $datos['metros_construccion'] ?? null,
-                ':metros_terreno' => $datos['metros_terreno'] ?? null,
-                ':tiene_estacionamiento' => $datos['estacionamiento'] > 0 ? 1 : 0,
-                ':tiene_piscina' => isset($datos['piscina']) ? 1 : 0,
-                ':viene_amueblado' => isset($datos['amueblado']) ? 1 : 0,
-                ':es_anuncio_destacado' => isset($datos['destacar']) ? 1 : 0,
+                ':num_habitaciones' => $datos['habitaciones'],
+                ':num_banos' => $datos['banos'],
+                ':metros_construccion' => $datos['metros_construccion'],
+                ':metros_terreno' => $datos['metros_terreno'],
+                ':tiene_estacionamiento' => $datos['estacionamiento'],
+                ':tiene_piscina' => $datos['piscina'],
+                ':viene_amueblado' => $datos['amueblado'],
+                ':es_anuncio_destacado' => $datos['destacar'],
                 ':departamento' => $datos['departamento'],
                 ':municipio' => $datos['municipio'],
                 ':direccion_exacta' => $datos['direccion'],
-                ':punto_referencia' => $datos['referencia'] ?? null,
-                ':latitud' => !empty($datos['latitud']) ? $datos['latitud'] : null,
-                ':longitud' => !empty($datos['longitud']) ? $datos['longitud'] : null
+                ':punto_referencia' => $datos['referencia'],
+                ':latitud' => $datos['latitud'],
+                ':longitud' => $datos['longitud']
             ]);
         } catch (PDOException $e) {
             error_log("Error al actualizar propiedad: " . $e->getMessage());
@@ -130,9 +134,29 @@ class PropiedadModel {
         }
     }
 
-    /**
-     * Guardar fotos de la propiedad
-     */
+    public function getById(string $id, string $vendedorId): ?array {
+        $sql = "SELECT p.*, 
+                       ti.nombre_opcion as tipo_inmueble_nombre,
+                       tn.nombre_opcion as tipo_negocio_nombre,
+                       ep.nombre_opcion as estado_nombre
+                FROM propiedades p
+                LEFT JOIN opciones_sistema ti ON p.tipo_inmueble_id = ti.id
+                LEFT JOIN opciones_sistema tn ON p.tipo_negocio_id = tn.id
+                LEFT JOIN opciones_sistema ep ON p.estado_publicacion_id = ep.id
+                WHERE p.id = :id AND p.vendedor_id = :vendedor_id";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':id' => $id, ':vendedor_id' => $vendedorId]);
+        return $stmt->fetch() ?: null;
+    }
+
+    public function getFotos(string $propiedadId): array {
+        $sql = "SELECT * FROM fotos_propiedad WHERE propiedad_id = :propiedad_id ORDER BY numero_orden ASC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':propiedad_id' => $propiedadId]);
+        return $stmt->fetchAll();
+    }
+
     public function guardarFoto(string $propiedadId, string $urlOriginal, string $urlMiniatura, int $orden = 0, bool $esPortada = false): bool {
         try {
             $sql = "INSERT INTO fotos_propiedad (id, propiedad_id, url_foto_original, url_foto_miniatura, numero_orden, es_foto_portada)
@@ -154,76 +178,24 @@ class PropiedadModel {
         }
     }
 
-    /**
-     * Eliminar fotos de una propiedad
-     */
+    public function eliminarFoto(string $fotoId, string $propiedadId): bool {
+        try {
+            $stmt = $this->db->prepare("DELETE FROM fotos_propiedad WHERE id = :id AND propiedad_id = :propiedad_id");
+            return $stmt->execute([':id' => $fotoId, ':propiedad_id' => $propiedadId]);
+        } catch (PDOException $e) {
+            error_log("Error al eliminar foto: " . $e->getMessage());
+            return false;
+        }
+    }
+
     public function eliminarFotos(string $propiedadId): bool {
         try {
-            // Primero obtener las rutas de las fotos para eliminar los archivos
-            $stmt = $this->db->prepare("SELECT url_foto_original, url_foto_miniatura FROM fotos_propiedad WHERE propiedad_id = :id");
-            $stmt->execute([':id' => $propiedadId]);
-            $fotos = $stmt->fetchAll();
-            
-            foreach ($fotos as $foto) {
-                if (!empty($foto['url_foto_original']) && file_exists(__DIR__ . '/../' . $foto['url_foto_original'])) {
-                    unlink(__DIR__ . '/../' . $foto['url_foto_original']);
-                }
-                if (!empty($foto['url_foto_miniatura']) && file_exists(__DIR__ . '/../' . $foto['url_foto_miniatura'])) {
-                    unlink(__DIR__ . '/../' . $foto['url_foto_miniatura']);
-                }
-            }
-            
-            // Eliminar registros de la BD
             $stmt = $this->db->prepare("DELETE FROM fotos_propiedad WHERE propiedad_id = :id");
             return $stmt->execute([':id' => $propiedadId]);
         } catch (PDOException $e) {
             error_log("Error al eliminar fotos: " . $e->getMessage());
             return false;
         }
-    }
-
-    /**
-     * Obtener propiedad por ID
-     */
-    public function getById(string $id): ?array {
-        $sql = "SELECT p.*, 
-                       CONCAT(u.nombre, ' ', u.apellido) as vendedor_nombre,
-                       ti.nombre_opcion as tipo_inmueble_nombre,
-                       tn.nombre_opcion as tipo_negocio_nombre,
-                       ep.nombre_opcion as estado_nombre
-                FROM propiedades p
-                JOIN usuarios u ON p.vendedor_id = u.id
-                JOIN opciones_sistema ti ON p.tipo_inmueble_id = ti.id
-                JOIN opciones_sistema tn ON p.tipo_negocio_id = tn.id
-                JOIN opciones_sistema ep ON p.estado_publicacion_id = ep.id
-                WHERE p.id = :id";
-        
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([':id' => $id]);
-        return $stmt->fetch() ?: null;
-    }
-
-    /**
-     * Obtener fotos de una propiedad
-     */
-    public function getFotos(string $propiedadId): array {
-        $sql = "SELECT * FROM fotos_propiedad WHERE propiedad_id = :propiedad_id ORDER BY numero_orden ASC";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([':propiedad_id' => $propiedadId]);
-        return $stmt->fetchAll();
-    }
-
-    /**
-     * Generar UUID v4
-     */
-    private function generarUUID(): string {
-        return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0x0fff) | 0x4000,
-            mt_rand(0, 0x3fff) | 0x8000,
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
-        );
     }
 }
 ?>
