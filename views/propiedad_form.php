@@ -51,7 +51,7 @@ if ($es_edicion) {
                 <!-- Header -->
                 <div class="form-header">
                     <div class="form-header-left">
-                        <h1><?php echo $es_edicion ? 'Editar propiedad' : 'Nueva propiedad'; ?></h1>
+                        <h1><?php echo $es_edicion ? 'Editar propiedad' : 'Propiedad'; ?></h1>
                         <?php if ($es_edicion && $propiedad): ?>
                             <div class="propiedad-ref"><?php echo htmlspecialchars($propiedad['titulo_anuncio'] ?? ''); ?> · #<?php echo strtoupper(substr($propiedad_id, 0, 4)); ?></div>
                         <?php endif; ?>
@@ -335,13 +335,19 @@ if ($es_edicion) {
                         </div>
                     </div>
 
+                   
                     <!-- Botones de acción inferiores -->
-                    <div class="form-actions">
-                        <button type="button" class="btn-secondary" id="btnCancelar">Cancelar</button>
-                        <button type="submit" class="btn-primary" id="btnGuardar">
-                            <?php echo $es_edicion ? 'Guardar y publicar' : 'Guardar y publicar'; ?>
-                        </button>
-                    </div>
+                        <div class="form-actions">
+                            <?php if ($es_edicion): ?>
+                                <button type="button" class="btn-danger" id="btnEliminar" onclick="confirmarEliminar('<?php echo $propiedad_id; ?>', '<?php echo htmlspecialchars($propiedad['titulo_anuncio'] ?? ''); ?>')">
+                                    🗑️ Eliminar propiedad
+                                </button>
+                            <?php endif; ?>
+                            <button type="button" class="btn-secondary" id="btnCancelar">Cancelar</button>
+                            <button type="submit" class="btn-primary" id="btnGuardar">
+                                <?php echo $es_edicion ? 'Guardar y publicar' : 'Guardar y publicar'; ?>
+                            </button>
+                        </div>
                 </form>
             </div>
         </div>
@@ -379,6 +385,13 @@ if ($es_edicion) {
 <script>
     const es_edicion = <?php echo $es_edicion ? 'true' : 'false'; ?>;
     const propiedad_id = '<?php echo $propiedad_id; ?>';
+</script>
+<script>
+function confirmarEliminar(id, titulo) {
+    if (confirm('¿Estás segura de que deseas eliminar la propiedad "' + titulo + '"?\n\nEsta acción no se puede deshacer y eliminará todas las fotos asociadas.')) {
+        window.location.href = '../controllers/vendedorPropiedadController.php?action=eliminar&id=' + id;
+    }
+}
 </script>
 <script src="../assets/js/propiedad_form.js"></script>
 </body>

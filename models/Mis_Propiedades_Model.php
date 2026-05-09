@@ -442,11 +442,10 @@ class PropiedadModel
        ELIMINAR PROPIEDAD COMPLETA
     ═══════════════════════════════════════════ */
     public function eliminar(string $id): bool
-    {
-        return $this->db->prepare('DELETE FROM propiedades WHERE id = :id')
-                        ->execute([':id' => $id]);
-    }
-
+{
+    return $this->db->prepare('DELETE FROM propiedades WHERE id = :id')
+                    ->execute([':id' => $id]);
+}
     /* ═══════════════════════════════════════════
        VERIFICAR DUEÑO
     ═══════════════════════════════════════════ */
@@ -469,4 +468,5 @@ class PropiedadModel
         $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
         return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
     }
+    
 }

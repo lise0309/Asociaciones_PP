@@ -107,8 +107,7 @@ if (isset($_POST['fotos_eliminar']) && is_array($_POST['fotos_eliminar'])) {
 
 // Subir nuevas fotos
 if ($propiedad_id && isset($_FILES['fotos']) && !empty($_FILES['fotos']['name'][0])) {
-    $upload_dir = $_SERVER['DOCUMENT_ROOT'] . '/Asociaciones_PP/uploads/propiedades/' . $propiedad_id . '/';
-    
+$upload_dir = __DIR__ . '/../uploads/propiedades/' . $propiedad_id . '/';    
     if (!file_exists($upload_dir)) {
         mkdir($upload_dir, 0777, true);
     }
@@ -129,6 +128,29 @@ if ($propiedad_id && isset($_FILES['fotos']) && !empty($_FILES['fotos']['name'][
             }
         }
     }
+}
+// ============================================
+// ELIMINAR PROPIEDAD
+// ============================================
+if (isset($_GET['action']) && $_GET['action'] === 'eliminar' && isset($_GET['id'])) {
+    $propiedad_id = $_GET['id'];
+    
+    // Verificar que la propiedad pertenece al vendedor
+    $propiedad = $model->getById($propiedad_id, $vendedorId);
+    
+    if ($propiedad) {
+        if ($model->eliminar($propiedad_id, $vendedorId)) {
+            $_SESSION['mensaje'] = "Propiedad eliminada correctamente";
+            $_SESSION['mensaje_tipo'] = 'success';
+        } else {
+            $_SESSION['error_mensaje'] = "Error al eliminar la propiedad";
+        }
+    } else {
+        $_SESSION['error_mensaje'] = "Propiedad no encontrada";
+    }
+    
+    header('Location: ../views/mis_propiedades.php');
+    exit;
 }
 
 header('Location: ../views/mis_propiedades.php');

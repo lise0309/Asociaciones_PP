@@ -119,4 +119,39 @@ function mostrarToast(mensaje, tipo = 'success') {
         u.searchParams.delete('error');
         history.replaceState({}, '', u.toString());
     }
+    // Función para abrir modal de confirmación
+function confirmarEliminar(id, titulo) {
+    document.getElementById('eliminarId').value = id;
+    document.getElementById('modalEliminarTexto').innerHTML = '¿Estás seguro de eliminar la propiedad <strong>"' + titulo + '"</strong>?<br>Esta acción no se puede deshacer.';
+    document.getElementById('modalEliminar').style.display = 'flex';
+}
+
+// Función para cerrar modal
+function cerrarModal() {
+    document.getElementById('modalEliminar').style.display = 'none';
+}
+
+// Cerrar modal al hacer clic fuera
+document.getElementById('modalEliminar')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        cerrarModal();
+    }
+});
+
+// Mostrar toast si hay mensaje
+document.addEventListener('DOMContentLoaded', function() {
+    const toastWrap = document.getElementById('toastWrap');
+    if (toastWrap && sessionStorage.getItem('mensaje')) {
+        mostrarToast(sessionStorage.getItem('mensaje'), 'success');
+        sessionStorage.removeItem('mensaje');
+    }
+});
+
+function mostrarToast(mensaje, tipo) {
+    const toast = document.createElement('div');
+    toast.className = 'toast toast-' + tipo;
+    toast.innerHTML = mensaje;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
 })();
