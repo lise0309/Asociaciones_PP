@@ -157,26 +157,32 @@ class VendedorPropiedadModel {
         return $stmt->fetchAll();
     }
 
-    public function guardarFoto(string $propiedadId, string $urlOriginal, string $urlMiniatura, int $orden = 0, bool $esPortada = false): bool {
-        try {
-            $sql = "INSERT INTO fotos_propiedad (id, propiedad_id, url_foto_original, url_foto_miniatura, numero_orden, es_foto_portada)
-                    VALUES (:id, :propiedad_id, :url_original, :url_miniatura, :orden, :portada)";
-            
-            $stmt = $this->db->prepare($sql);
-            
-            return $stmt->execute([
-                ':id' => $this->generarUUID(),
-                ':propiedad_id' => $propiedadId,
-                ':url_original' => $urlOriginal,
-                ':url_miniatura' => $urlMiniatura,
-                ':orden' => $orden,
-                ':portada' => $esPortada ? 1 : 0
-            ]);
-        } catch (PDOException $e) {
-            error_log("Error al guardar foto: " . $e->getMessage());
-            return false;
-        }
+   public function guardarFoto(string $propiedadId, string $urlOriginal, string $urlMiniatura, int $orden = 0, bool $esPortada = false): bool {
+    try {
+        $sql = "INSERT INTO fotos_propiedad (id, propiedad_id, url_foto_original, url_foto_miniatura, numero_orden, es_foto_portada)
+                VALUES (:id, :propiedad_id, :url_original, :url_miniatura, :orden, :portada)";
+        
+        $stmt = $this->db->prepare($sql);
+        
+        $resultado = $stmt->execute([
+            ':id' => $this->generarUUID(),
+            ':propiedad_id' => $propiedadId,
+            ':url_original' => $urlOriginal,
+            ':url_miniatura' => $urlMiniatura,
+            ':orden' => $orden,
+            ':portada' => $esPortada ? 1 : 0
+        ]);
+        
+        // ====== DEBUG ======
+        error_log("Guardar foto - Propiedad: $propiedadId, URL: $urlOriginal, Resultado: " . ($resultado ? "OK" : "FALLO"));
+        // =================
+        
+        return $resultado;
+    } catch (PDOException $e) {
+        error_log("Error al guardar foto: " . $e->getMessage());
+        return false;
     }
+}
 
     public function eliminarFoto(string $fotoId, string $propiedadId): bool {
         try {
@@ -197,5 +203,48 @@ class VendedorPropiedadModel {
             return false;
         }
     }
+    /**
+ * Eliminar una propiedad y todas sus fotos asociadas
+ */
+public function eliminar(string $id, string $vendedorId): bool {
+    try {
+        // Primero obtener las fotos para eliminar los archivos físicos
+        $fotos = $this->getFotos($id);
+        
+        // Eliminar los archivos de imagen del servidor
+        foreach ($fotos as $foto) {
+            $ruta_original = $_SERVER['DOCUMENT_ROOT'] . $foto['url_foto_original'];
+            $ruta_miniatura = $_SERVER['DOCUMENT_ROOT'] . $foto['url_foto_miniatura'];
+            
+            if (file_exists($ruta_original)) {
+                unlink($ruta_original);
+            }
+            if (file_exists($ruta_miniatura)) {
+                unlink($ruta_miniatura);
+            }
+        }
+        
+        // Eliminar la carpeta de la propiedad si está vacía
+        $carpeta = $_SERVER['DOCUMENT_ROOT'] . '/Asociaciones_PP/uploads/propiedades/' . $id;
+        if (is_dir($carpeta)) {
+            // Intentar eliminar la carpeta (solo si está vacía)
+            @rmdir($carpeta);
+        }
+        
+        // Eliminar la propiedad de la base de datos
+        // Las fotos se eliminarán automáticamente por el FOREIGN KEY (ON DELETE CASCADE)
+        $sql = "DELETE FROM propiedades WHERE id = :id AND vendedor_id = :vendedor_id";
+        $stmt = $this->db->prepare($sql);
+        
+        return $stmt->execute([
+            ':id' => $id,
+            ':vendedor_id' => $vendedorId
+        ]);
+        
+    } catch (PDOException $e) {
+        error_log("Error al eliminar propiedad: " . $e->getMessage());
+        return false;
+    }
+}
 }
 ?>

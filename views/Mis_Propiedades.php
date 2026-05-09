@@ -57,6 +57,12 @@ function formatPrecio(float $precio): string {
 function urlFoto(?string $mini, ?string $orig): string {
     $ruta = $mini ?: $orig;
     if (!$ruta) return '../assets/img/no-photo.svg';
+    
+    // Si la ruta ya comienza con /, no agregues ../
+    if (strpos($ruta, '/') === 0) {
+        return '.' . htmlspecialchars($ruta);
+    }
+    
     return '../' . htmlspecialchars($ruta);
 }
 ?>
@@ -341,7 +347,7 @@ function urlFoto(?string $mini, ?string $orig): string {
         <p id="modalEliminarTexto">Esta acción no se puede deshacer.</p>
         <div class="modal-confirm-btns">
             <button type="button" class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
-            <form id="formEliminar" method="POST" action="../controllers/propiedadController.php">
+            <form id="formEliminar" method="POST" action="../controllers/Mi_propiedad_Controller.php">
                 <input type="hidden" name="accion" value="eliminar">
                 <input type="hidden" name="propiedad_id" id="eliminarId">
                 <button type="submit" class="btn-danger">Sí, eliminar</button>
