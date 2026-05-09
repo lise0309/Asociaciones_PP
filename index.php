@@ -1,8 +1,8 @@
 <?php
 /**
  * INDEX — PP Bienes Raíces
- * Versión Premium Optimizada
  * Asociaciones Portillo Pocasangre
+ * Vista pública (Guest)
  */
 ?>
 <!DOCTYPE html>
@@ -10,46 +10,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="PP Bienes Raíces — La mejor experiencia inmobiliaria en El Salvador. Casas, apartamentos, terrenos y más.">
+  <meta name="description" content="PP Bienes Raíces — La mejor experiencia inmobiliaria en El Salvador.">
   <meta name="keywords" content="bienes raíces, El Salvador, propiedades, casas, apartamentos, terrenos">
-  <meta name="author" content="PP Bienes Raíces">
   <meta property="og:title" content="PP Bienes Raíces | Inicio">
-  <meta property="og:description" content="Encuentra la propiedad de tus sueños en El Salvador">
   <meta property="og:type" content="website">
-  <title>PP Bienes Raíces | Propiedades de lujo en El Salvador</title>
+  <title>PP Bienes Raíces | Propiedades en El Salvador</title>
 
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Styles -->
-  <link rel="stylesheet" href="assets/css/index.css">
   <link rel="stylesheet" href="assets/css/navbar.css">
+  <link rel="stylesheet" href="assets/css/index.css">
   <link rel="stylesheet" href="assets/css/footer.css">
-  
-  <!-- Favicon -->
-  <link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
 </head>
 <body>
 
-  <!-- ═══════════════════════════════════════════════════════════
-       NAVBAR — INCLUIDO DESDE ARCHIVO APARTE
-  ═══════════════════════════════════════════════════════════ -->
   <?php include 'views/layouts/navbar.php'; ?>
 
-  <!-- ═══════════════════════════════════════════════════════════
+  <!-- ═══════════════════════════════════════
        LAYOUT PRINCIPAL
-  ═══════════════════════════════════════════════════════════ -->
-  <div class="page-layout">
+  ═══════════════════════════════════════ -->
+  <div class="page-layout" id="pageLayout">
 
-    <!-- ───────────────────────────────────────────────────────────
-         PANEL DE FILTROS
-    ─────────────────────────────────────────────────────────── -->
+    <!-- ── PANEL DE FILTROS ── -->
     <aside class="filtros-panel" id="filtrosPanel">
+
       <div class="filtros-header">
-        <h3 class="filtros-titulo">Filtros de búsqueda</h3>
-        <button class="filtros-close" id="filtrosClose" aria-label="Cerrar filtros">×</button>
+        <h3 class="filtros-titulo">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.972.206 7.372.601a.75.75 0 01.628.74v2.288a2.25 2.25 0 01-.659 1.59l-4.682 4.683a2.25 2.25 0 00-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 018 18.25v-5.757a2.25 2.25 0 00-.659-1.591L2.659 6.22A2.25 2.25 0 012 4.628V2.34a.75.75 0 01.628-.74z" clip-rule="evenodd"/>
+          </svg>
+          Filtros
+        </h3>
+        <!-- Botón cerrar en móvil -->
+        <button class="filtros-close" id="filtrosClose" aria-label="Cerrar filtros">✕</button>
       </div>
 
       <!-- Modalidad -->
@@ -75,7 +70,7 @@
         </select>
       </div>
 
-      <!-- Ubicación -->
+      <!-- Departamento -->
       <div class="filtro-grupo">
         <label class="filtro-label">Departamento</label>
         <select class="filtro-select" id="filtroCiudad">
@@ -122,7 +117,7 @@
         </select>
       </div>
 
-      <!-- Rango de precio -->
+      <!-- Precio -->
       <div class="filtro-grupo">
         <label class="filtro-label">Precio (USD)</label>
         <div class="filtro-precio-row">
@@ -136,34 +131,42 @@
         <label class="filtro-label">Moneda</label>
         <div class="filtro-pills" id="filtroMoneda">
           <button class="pill active" data-val="usd">USD</button>
-          <button class="pill" data-val="es">€ EUR</button>
-          <button class="pill" data-val="fr">₿ BTC</button>
+          <button class="pill" data-val="eur">€ EUR</button>
+          <button class="pill" data-val="btc">₿ BTC</button>
         </div>
       </div>
 
-      <!-- Botones de acción -->
       <div class="filtro-actions">
-        <button class="btn-buscar" onclick="buscarPropiedades()">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
+        <button class="btn-buscar" id="btnBuscar">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"/>
           </svg>
           Buscar propiedades
         </button>
-        <button class="btn-limpiar" onclick="limpiarFiltros()">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
-            <path fill-rule="evenodd" d="M3.5 3.5a.75.75 0 011.06 0L10 8.94l5.44-5.44a.75.75 0 111.06 1.06L11.06 10l5.44 5.44a.75.75 0 11-1.06 1.06L10 11.06l-5.44 5.44a.75.75 0 01-1.06-1.06L8.94 10 3.5 4.56a.75.75 0 010-1.06z" clip-rule="evenodd"/>
+        <button class="btn-limpiar" id="btnLimpiar">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4z" clip-rule="evenodd"/>
           </svg>
           Limpiar filtros
         </button>
       </div>
+
     </aside>
 
-    <!-- ───────────────────────────────────────────────────────────
-         CONTENIDO PRINCIPAL
-    ─────────────────────────────────────────────────────────── -->
-    <main class="contenido-principal">
+    <!-- Botón toggle sidebar (visible en desktop) -->
+    <button class="sidebar-toggle-btn" id="sidebarToggleBtn" aria-label="Mostrar/ocultar filtros" title="Mostrar/ocultar filtros">
+      <svg class="toggle-icon-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.972.206 7.372.601a.75.75 0 01.628.74v2.288a2.25 2.25 0 01-.659 1.59l-4.682 4.683a2.25 2.25 0 00-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 018 18.25v-5.757a2.25 2.25 0 00-.659-1.591L2.659 6.22A2.25 2.25 0 012 4.628V2.34a.75.75 0 01.628-.74z" clip-rule="evenodd"/>
+      </svg>
+      <svg class="toggle-icon-close" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="display:none">
+        <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/>
+      </svg>
+    </button>
 
-      <!-- HERO SECTION — Premium -->
+    <!-- ── CONTENIDO PRINCIPAL ── -->
+    <main class="contenido-principal" id="contenidoPrincipal">
+
+      <!-- HERO -->
       <section class="hero-section">
         <div class="hero-content">
           <div class="hero-texto">
@@ -173,8 +176,7 @@
               <em>El Salvador hoy</em>
             </h1>
             <p class="hero-sub">
-              Descubre las propiedades más exclusivas del mercado inmobiliario salvadoreño. 
-              Terrenos, fincas, residencias y locales comerciales con los mejores precios.
+              Descubre las propiedades más exclusivas del mercado inmobiliario salvadoreño. Terrenos, fincas, residencias y locales con los mejores precios.
             </p>
             <div class="hero-stats">
               <div class="hero-stat">
@@ -196,7 +198,7 @@
             </div>
           </div>
 
-          <!-- Banner del mapa -->
+          <!-- Banner mapa -->
           <div class="mapa-banner">
             <div class="mapa-banner-inner">
               <div class="mapa-banner-left">
@@ -212,7 +214,7 @@
               </div>
               <a href="views/propiedades/mapa.php" class="btn-abrir-mapa">
                 Abrir mapa
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd"/>
                 </svg>
               </a>
@@ -221,14 +223,15 @@
         </div>
       </section>
 
-      <!-- BARRA DE RESULTADOS -->
+      <!-- BARRA RESULTADOS -->
       <div class="resultados-bar">
         <div class="resultados-left">
           <span class="resultados-count">
             <strong id="totalCount">868</strong> propiedades encontradas
           </span>
-          <button class="btn-filtros-mobile" id="btnFiltrosMobile" aria-label="Abrir filtros">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
+          <!-- Botón filtros solo en móvil -->
+          <button class="btn-filtros-mobile" id="btnFiltrosMobile">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.972.206 7.372.601a.75.75 0 01.628.74v2.288a2.25 2.25 0 01-.659 1.59l-4.682 4.683a2.25 2.25 0 00-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 018 18.25v-5.757a2.25 2.25 0 00-.659-1.591L2.659 6.22A2.25 2.25 0 012 4.628V2.34a.75.75 0 01.628-.74z" clip-rule="evenodd"/>
             </svg>
             Filtros
@@ -245,151 +248,108 @@
         </div>
       </div>
 
-      <!-- GRID DE PROPIEDADES -->
+      <!-- GRID PROPIEDADES -->
       <div class="props-grid" id="propsGrid">
-        <!-- Card 1 -->
+
         <article class="prop-card">
           <a href="views/propiedades/detalle.php?id=2342" class="prop-card-link">
             <div class="prop-img">
-              <div class="prop-img-bg" style="background-image: url('assets/img/propiedades/finca-cafe.jpg');"></div>
-              <div class="prop-img-ph" aria-label="Imagen de la propiedad">🏡</div>
-              <div class="prop-tags">
-                <span class="ptag ptag-venta">VENTA</span>
-              </div>
+              <div class="prop-img-ph">🏡</div>
+              <div class="prop-tags"><span class="ptag ptag-venta">VENTA</span></div>
               <span class="prop-codigo">#2342</span>
             </div>
             <div class="prop-body">
               <div class="prop-price">US$ 298,000 <small>venta</small></div>
               <h3 class="prop-titulo">Finca de Café con vivienda principal</h3>
               <div class="prop-loc">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd"/></svg>
                 Jayaque, La Libertad
               </div>
-              <div class="prop-feats">
-                <span>🚪 2 hab.</span>
-                <span>🛁 2 baños</span>
-                <span>📐 4.2 mz</span>
-              </div>
+              <div class="prop-feats"><span>🚪 2 hab.</span><span>🛁 2 baños</span><span>📐 4.2 mz</span></div>
             </div>
           </a>
         </article>
 
-        <!-- Card 2 -->
         <article class="prop-card">
           <a href="views/propiedades/detalle.php?id=2343" class="prop-card-link">
             <div class="prop-img">
               <div class="prop-img-ph">🌿</div>
-              <div class="prop-tags">
-                <span class="ptag ptag-venta">VENTA</span>
-              </div>
+              <div class="prop-tags"><span class="ptag ptag-venta">VENTA</span></div>
               <span class="prop-codigo">#2343</span>
             </div>
             <div class="prop-body">
               <div class="prop-price">US$ 330,000 <small>venta</small></div>
               <h3 class="prop-titulo">Terreno residencial con vista panorámica</h3>
               <div class="prop-loc">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd"/></svg>
                 San José Villanueva, La Libertad
               </div>
-              <div class="prop-feats">
-                <span>📐 2,500 m²</span>
-                <span>🌳 Vista montaña</span>
-              </div>
+              <div class="prop-feats"><span>📐 2,500 m²</span><span>🌳 Vista montaña</span></div>
             </div>
           </a>
         </article>
 
-        <!-- Card 3 -->
         <article class="prop-card">
           <a href="views/propiedades/detalle.php?id=2341" class="prop-card-link">
             <div class="prop-img">
               <div class="prop-img-ph">🏖️</div>
-              <div class="prop-tags">
-                <span class="ptag ptag-venta">VENTA</span>
-              </div>
+              <div class="prop-tags"><span class="ptag ptag-venta">VENTA</span></div>
               <span class="prop-codigo">#2341</span>
             </div>
             <div class="prop-body">
               <div class="prop-price">US$ 140,000 <small>venta</small></div>
               <h3 class="prop-titulo">Terreno frente al mar con acceso directo</h3>
               <div class="prop-loc">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd"/></svg>
                 La Libertad, La Libertad
               </div>
-              <div class="prop-feats">
-                <span>📐 1,200 m²</span>
-                <span>🌊 Frente al mar</span>
-              </div>
+              <div class="prop-feats"><span>📐 1,200 m²</span><span>🌊 Frente al mar</span></div>
             </div>
           </a>
         </article>
 
-        <!-- Card 4 -->
         <article class="prop-card">
           <a href="views/propiedades/detalle.php?id=2340" class="prop-card-link">
             <div class="prop-img">
               <div class="prop-img-ph">🏠</div>
-              <div class="prop-tags">
-                <span class="ptag ptag-renta">RENTA</span>
-              </div>
+              <div class="prop-tags"><span class="ptag ptag-renta">RENTA</span></div>
               <span class="prop-codigo">#2340</span>
             </div>
             <div class="prop-body">
               <div class="prop-price">US$ 1,200 <small>/mes</small></div>
               <h3 class="prop-titulo">Casa residencial totalmente amueblada</h3>
               <div class="prop-loc">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd"/></svg>
                 Santa Tecla, La Libertad
               </div>
-              <div class="prop-feats">
-                <span>🚪 3 hab.</span>
-                <span>🛁 2 baños</span>
-                <span>📐 220 m²</span>
-              </div>
+              <div class="prop-feats"><span>🚪 3 hab.</span><span>🛁 2 baños</span><span>📐 220 m²</span></div>
             </div>
           </a>
         </article>
 
-        <!-- Card 5 -->
         <article class="prop-card">
           <a href="views/propiedades/detalle.php?id=2339" class="prop-card-link">
             <div class="prop-img">
               <div class="prop-img-ph">🏢</div>
-              <div class="prop-tags">
-                <span class="ptag ptag-renta">RENTA</span>
-              </div>
+              <div class="prop-tags"><span class="ptag ptag-renta">RENTA</span></div>
               <span class="prop-codigo">#2339</span>
             </div>
             <div class="prop-body">
               <div class="prop-price">US$ 2,400 <small>/mes</small></div>
               <h3 class="prop-titulo">Local comercial en zona céntrica</h3>
               <div class="prop-loc">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd"/></svg>
                 San Salvador, San Salvador
               </div>
-              <div class="prop-feats">
-                <span>📐 180 m²</span>
-                <span>📍 Zona rosa</span>
-              </div>
+              <div class="prop-feats"><span>📐 180 m²</span><span>📍 Zona rosa</span></div>
             </div>
           </a>
         </article>
 
-        <!-- Card 6 (Destacada) -->
         <article class="prop-card prop-card-destacada">
           <a href="views/propiedades/detalle.php?id=2338" class="prop-card-link">
             <div class="prop-img">
-              <div class="prop-img-ph">⭐</div>
+              <div class="prop-img-ph">🌄</div>
               <div class="prop-tags">
                 <span class="ptag ptag-venta">VENTA</span>
                 <span class="ptag ptag-star">★ Destacada</span>
@@ -400,22 +360,17 @@
               <div class="prop-price">US$ 195,000 <small>venta</small></div>
               <h3 class="prop-titulo">Casa estilo colonial con jardín amplio</h3>
               <div class="prop-loc">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd"/></svg>
                 Santa Tecla, La Libertad
               </div>
-              <div class="prop-feats">
-                <span>🚪 4 hab.</span>
-                <span>🛁 3 baños</span>
-                <span>📐 320 m²</span>
-              </div>
+              <div class="prop-feats"><span>🚪 4 hab.</span><span>🛁 3 baños</span><span>📐 320 m²</span></div>
             </div>
           </a>
         </article>
+
       </div>
 
-      <!-- PAGINACIÓN (placeholder) -->
+      <!-- PAGINACIÓN -->
       <div class="paginacion">
         <button class="page-btn active">1</button>
         <button class="page-btn">2</button>
@@ -428,150 +383,15 @@
     </main>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════════
-       FOOTER
-  ═══════════════════════════════════════════════════════════ -->
+  <!-- Overlay para móvil -->
+  <div class="filtros-overlay" id="filtrosOverlay"></div>
+
   <?php include 'views/layouts/footer.php'; ?>
 
-  <!-- JavaScript optimizado -->
   <script>
-    (function() {
-      // ==================== NAVBAR SCROLL ====================
-      const navbar = document.getElementById('navbar');
-      if (navbar) {
-        window.addEventListener('scroll', () => {
-          navbar.classList.toggle('scrolled', window.scrollY > 20);
-        });
-      }
-
-      // ==================== HAMBURGER MENU ====================
-      const btn = document.getElementById('navHamburger');
-      const links = document.getElementById('nav-links');
-      if (btn && links) {
-        btn.addEventListener('click', () => {
-          const open = links.classList.toggle('open');
-          btn.setAttribute('aria-expanded', open);
-          btn.classList.toggle('open', open);
-          document.body.style.overflow = open ? 'hidden' : '';
-        });
-      }
-
-      // ==================== FILTROS PILLS ====================
-      document.querySelectorAll('.filtro-pills').forEach(group => {
-        const pills = group.querySelectorAll('.pill');
-        pills.forEach(pill => {
-          pill.addEventListener('click', () => {
-            pills.forEach(p => p.classList.remove('active'));
-            pill.classList.add('active');
-          });
-        });
-      });
-
-      // ==================== FILTROS MOBILE ====================
-      const filtrosPanel = document.getElementById('filtrosPanel');
-      const btnFiltrosMobile = document.getElementById('btnFiltrosMobile');
-      const filtrosClose = document.getElementById('filtrosClose');
-
-      if (btnFiltrosMobile && filtrosPanel) {
-        btnFiltrosMobile.addEventListener('click', () => {
-          filtrosPanel.classList.toggle('open');
-          document.body.style.overflow = filtrosPanel.classList.contains('open') ? 'hidden' : '';
-        });
-      }
-
-      if (filtrosClose && filtrosPanel) {
-        filtrosClose.addEventListener('click', () => {
-          filtrosPanel.classList.remove('open');
-          document.body.style.overflow = '';
-        });
-      }
-
-      // Cerrar filtros al hacer click fuera (solo mobile)
-      document.addEventListener('click', (e) => {
-        if (window.innerWidth <= 768 && filtrosPanel && filtrosPanel.classList.contains('open')) {
-          if (!filtrosPanel.contains(e.target) && !btnFiltrosMobile?.contains(e.target)) {
-            filtrosPanel.classList.remove('open');
-            document.body.style.overflow = '';
-          }
-        }
-      });
-
-      // ==================== ANIMACIÓN CONTADORES ====================
-      function animateCounter(element, target) {
-        let current = 0;
-        const increment = target / 50;
-        const timer = setInterval(() => {
-          current += increment;
-          if (current >= target) {
-            element.textContent = target.toLocaleString();
-            clearInterval(timer);
-          } else {
-            element.textContent = Math.floor(current).toLocaleString();
-          }
-        }, 20);
-      }
-
-      const statNumbers = document.querySelectorAll('.stat-num');
-      const observerOptions = { threshold: 0.3, rootMargin: '0px' };
-      
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const el = entry.target;
-            const target = parseInt(el.dataset.count, 10);
-            if (target && !el.classList.contains('animated')) {
-              el.classList.add('animated');
-              animateCounter(el, target);
-            }
-            observer.unobserve(el);
-          }
-        });
-      }, observerOptions);
-      
-      statNumbers.forEach(num => observer.observe(num));
-
-      // ==================== EFECTO HOVER EN TARJETAS ====================
-      const propCards = document.querySelectorAll('.prop-card');
-      propCards.forEach(card => {
-        card.addEventListener('mouseenter', () => {
-          propCards.forEach(c => c.style.opacity = '0.7');
-          card.style.opacity = '1';
-        });
-        card.addEventListener('mouseleave', () => {
-          propCards.forEach(c => c.style.opacity = '1');
-        });
-      });
-
-      // ==================== RESIZE HANDLER ====================
-      let resizeTimer;
-      window.addEventListener('resize', () => {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => {
-          if (window.innerWidth > 768 && filtrosPanel) {
-            filtrosPanel.classList.remove('open');
-            document.body.style.overflow = '';
-          }
-        }, 250);
-      });
-
-    })();
-
-    // ==================== FUNCIONES GLOBALES ====================
-    function buscarPropiedades() {
-      console.log('🔍 Buscando propiedades... (conexión a BD pendiente)');
-    }
-
-    function limpiarFiltros() {
-      document.querySelectorAll('.filtro-select').forEach(s => s.value = '');
-      document.querySelectorAll('.filtro-input').forEach(i => i.value = '');
-      document.querySelectorAll('.filtro-pills .pill').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.filtro-pills').forEach(group => {
-        const firstPill = group.querySelector('.pill');
-        if (firstPill) firstPill.classList.add('active');
-      });
-      console.log('🧹 Filtros limpiados');
-    }
+    const PROP_URL = 'controllers/PropiedadController.php';
   </script>
+  <script src="assets/js/index.js"></script>
 
 </body>
 </html>
