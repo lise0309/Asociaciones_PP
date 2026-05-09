@@ -22,7 +22,7 @@
               </svg>
             </div>
             <div class="footer-logo-text">
-              <strong>ProyectoMira</strong>
+              <strong>Asociaciones PP.</strong>
               <span>Bienes Raíces · El Salvador</span>
             </div>
           </a>
@@ -103,7 +103,7 @@
               </div>
               <div class="contact-info">
                 <span class="contact-label">Correo</span>
-                <span class="contact-value"><a href="mailto:info@proyectomira.sv">info@proyectomira.sv</a></span>
+                <span class="contact-value"><a href="mailto:info@proyectomira.sv">info@AsociacionesPP.sv</a></span>
               </div>
             </div>
 
