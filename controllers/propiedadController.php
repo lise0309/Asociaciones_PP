@@ -1,13 +1,18 @@
 <?php
 /**
- * PROPIEDADES CONTROLLER — Vista pública (Guest)
+ * PROPIEDAD CONTROLLER — Vista pública (Guest)
  * PP Bienes Raíces — controllers/PropiedadController.php
- * Devuelve propiedades activas en JSON para el index
+ *
+ * Solo muestra propiedades con estado_publicacion = "Activa"
+ * y vendedor con cuenta_activa = 1
+ *
+ * Acciones:
+ *   GET ?accion=stats   → contadores para el hero
+ *   GET ?accion=listar  → propiedades con filtros
  */
 
 require_once __DIR__ . '/../config/database.php';
 
-// Solo GET permitido
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
   http_response_code(405);
   header('Content-Type: application/json');
@@ -22,89 +27,112 @@ $accion = $_GET['accion'] ?? 'listar';
 try {
   $db = Database::conectar();
 
-  // ── STATS DEL HERO ──────────────────────────────────────
+  /* ═══════════════════════════════════════════
+     STATS DEL HERO
+  ═══════════════════════════════════════════ */
   if ($accion === 'stats') {
+
     $stats = $db->query('
       SELECT
-        (SELECT COUNT(*) FROM propiedades p
-         JOIN opciones_sistema o ON p.estado_publicacion_id = o.id
-         WHERE o.nombre_opcion = "Activa") AS propiedades,
-        (SELECT COUNT(DISTINCT departamento) FROM propiedades p
-         JOIN opciones_sistema o ON p.estado_publicacion_id = o.id
-         WHERE o.nombre_opcion = "Activa") AS departamentos,
-        (SELECT COUNT(*) FROM usuarios WHERE rol = "vendedor" AND cuenta_activa = 1) AS agentes
+        (SELECT COUNT(*)
+         FROM   propiedades p
+         JOIN   opciones_sistema o ON p.estado_publicacion_id = o.id
+         JOIN   usuarios u         ON p.vendedor_id           = u.id
+         WHERE  o.nombre_opcion = "Activa"
+         AND    u.cuenta_activa = 1)                              AS propiedades,
+
+        (SELECT COUNT(DISTINCT p.departamento)
+         FROM   propiedades p
+         JOIN   opciones_sistema o ON p.estado_publicacion_id = o.id
+         JOIN   usuarios u         ON p.vendedor_id           = u.id
+         WHERE  o.nombre_opcion = "Activa"
+         AND    u.cuenta_activa = 1)                              AS departamentos,
+
+        (SELECT COUNT(*)
+         FROM   usuarios
+         WHERE  rol = "vendedor"
+         AND    cuenta_activa    = 1
+         AND    cuenta_verificada = 1)                            AS agentes
     ')->fetch();
 
     echo json_encode(['ok' => true, 'stats' => $stats]);
     exit;
   }
 
-  // ── LISTAR PROPIEDADES ───────────────────────────────────
-  $where  = ["o_pub.nombre_opcion = 'Activa'"];
+  /* ═══════════════════════════════════════════
+     LISTAR PROPIEDADES
+  ═══════════════════════════════════════════ */
+
+  // Base: solo propiedades ACTIVAS de vendedores ACTIVOS
+  $where  = [
+    "o_pub.nombre_opcion = 'Activa'",
+    "u.cuenta_activa = 1",
+  ];
   $params = [];
 
-  // Filtro modalidad (tipo_negocio)
+  // ── Modalidad (negocio): venta | alquiler | opcion ──
   if (!empty($_GET['negocio'])) {
-    $negocioMap = [
+    $mapa = [
       'venta'   => 'Venta',
       'alquiler'=> 'Alquiler',
       'opcion'  => 'Alquiler con opción a compra',
     ];
-    $negocioNombre = $negocioMap[$_GET['negocio']] ?? null;
-    if ($negocioNombre) {
-      $where[]             = "o_neg.nombre_opcion = :negocio";
-      $params[':negocio']  = $negocioNombre;
+    $neg = $mapa[$_GET['negocio']] ?? null;
+    if ($neg) {
+      $where[]           = 'o_neg.nombre_opcion = :negocio';
+      $params[':negocio']= $neg;
     }
   }
 
-  // Filtro tipo inmueble
+  // ── Tipo de inmueble: valor exacto del select ──
+  // El select envía el texto exacto: "Casa", "Apartamento", etc.
   if (!empty($_GET['tipo'])) {
-    $tipoMap = [
-      'casa'        => 'Casa',
-      'apartamento' => 'Apartamento',
-      'local'       => 'Local comercial',
-      'terreno'     => 'Terreno',
-      'finca'       => 'Casa',
-      'bodega'      => 'Bodega',
-    ];
-    $tipoNombre = $tipoMap[$_GET['tipo']] ?? $_GET['tipo'];
-    $where[]           = "o_tip.nombre_opcion = :tipo";
-    $params[':tipo']   = $tipoNombre;
+    $where[]        = 'o_tip.nombre_opcion = :tipo';
+    $params[':tipo']= trim($_GET['tipo']);
   }
 
-  // Filtro departamento
+  // ── Departamento ──
   if (!empty($_GET['departamento'])) {
-    $where[]                  = "p.departamento = :dpto";
-    $params[':dpto']          = $_GET['departamento'];
+    $where[]         = 'p.departamento = :dpto';
+    $params[':dpto'] = trim($_GET['departamento']);
   }
 
-  // Filtro precio mínimo
-  if (!empty($_GET['precio_min']) && is_numeric($_GET['precio_min'])) {
-    $where[]                  = "p.precio_pedido >= :pmin";
-    $params[':pmin']          = (float) $_GET['precio_min'];
+  // ── Precio mínimo ──
+  if (isset($_GET['precio_min']) && $_GET['precio_min'] !== '' && is_numeric($_GET['precio_min'])) {
+    $where[]         = 'p.precio_pedido >= :pmin';
+    $params[':pmin'] = (float) $_GET['precio_min'];
   }
 
-  // Filtro precio máximo
-  if (!empty($_GET['precio_max']) && is_numeric($_GET['precio_max'])) {
-    $where[]                  = "p.precio_pedido <= :pmax";
-    $params[':pmax']          = (float) $_GET['precio_max'];
+  // ── Precio máximo ──
+  if (isset($_GET['precio_max']) && $_GET['precio_max'] !== '' && is_numeric($_GET['precio_max'])) {
+    $where[]         = 'p.precio_pedido <= :pmax';
+    $params[':pmax'] = (float) $_GET['precio_max'];
   }
 
-  // Búsqueda por texto
+  // ── Búsqueda por texto ──
   if (!empty($_GET['q'])) {
-    $where[]           = "(p.titulo_anuncio LIKE :q OR p.municipio LIKE :q OR p.departamento LIKE :q)";
-    $params[':q']      = '%' . trim($_GET['q']) . '%';
+    $q = '%' . trim($_GET['q']) . '%';
+    $where[]      = '(p.titulo_anuncio LIKE :q OR p.municipio LIKE :q OR p.departamento LIKE :q OR p.descripcion_detallada LIKE :q)';
+    $params[':q'] = $q;
   }
 
-  // Ordenar
-  $orden = match($_GET['orden'] ?? 'recientes') {
+  // ── Ordenar ──
+  $orden = match ($_GET['orden'] ?? 'recientes') {
     'menor-precio' => 'p.precio_pedido ASC',
     'mayor-precio' => 'p.precio_pedido DESC',
     'destacadas'   => 'p.es_anuncio_destacado DESC, p.fecha_publicacion DESC',
-    default        => 'p.fecha_publicacion DESC',
+    default        => 'p.es_anuncio_destacado DESC, p.fecha_publicacion DESC',
   };
 
-  $sql = '
+  $whereStr = implode(' AND ', $where);
+
+  // ── Paginación ──
+  $pagina    = max(1, (int) ($_GET['pagina'] ?? 1));
+  $porPagina = 12;
+  $offset    = ($pagina - 1) * $porPagina;
+
+  // ── Query principal ──
+  $sql = "
     SELECT
       p.id,
       p.titulo_anuncio,
@@ -120,42 +148,51 @@ try {
       p.fecha_publicacion,
       o_tip.nombre_opcion AS tipo_inmueble,
       o_neg.nombre_opcion AS tipo_negocio,
-      o_pub.nombre_opcion AS estado,
       (SELECT url_foto_original FROM fotos_propiedad
-       WHERE propiedad_id = p.id AND es_foto_portada = 1
-       LIMIT 1) AS foto_portada
+       WHERE  propiedad_id = p.id AND es_foto_portada = 1
+       LIMIT  1)          AS foto_portada
     FROM  propiedades p
     JOIN  opciones_sistema o_pub ON p.estado_publicacion_id = o_pub.id
     JOIN  opciones_sistema o_tip ON p.tipo_inmueble_id      = o_tip.id
     JOIN  opciones_sistema o_neg ON p.tipo_negocio_id       = o_neg.id
-    WHERE ' . implode(' AND ', $where) . '
-    ORDER BY ' . $orden . '
-    LIMIT 50
-  ';
+    JOIN  usuarios u              ON p.vendedor_id           = u.id
+    WHERE {$whereStr}
+    ORDER BY {$orden}
+    LIMIT :lim OFFSET :off
+  ";
 
   $stmt = $db->prepare($sql);
-  $stmt->execute($params);
+  foreach ($params as $k => $v) $stmt->bindValue($k, $v);
+  $stmt->bindValue(':lim', $porPagina, PDO::PARAM_INT);
+  $stmt->bindValue(':off', $offset,    PDO::PARAM_INT);
+  $stmt->execute();
   $propiedades = $stmt->fetchAll();
 
-  // Total para el contador
-  $sqlCount = '
-    SELECT COUNT(*) FROM propiedades p
-    JOIN opciones_sistema o_pub ON p.estado_publicacion_id = o_pub.id
-    JOIN opciones_sistema o_neg ON p.tipo_negocio_id       = o_neg.id
-    JOIN opciones_sistema o_tip ON p.tipo_inmueble_id      = o_tip.id
-    WHERE ' . implode(' AND ', $where);
-
+  // ── Total ──
+  $sqlCount = "
+    SELECT COUNT(*)
+    FROM  propiedades p
+    JOIN  opciones_sistema o_pub ON p.estado_publicacion_id = o_pub.id
+    JOIN  opciones_sistema o_tip ON p.tipo_inmueble_id      = o_tip.id
+    JOIN  opciones_sistema o_neg ON p.tipo_negocio_id       = o_neg.id
+    JOIN  usuarios u              ON p.vendedor_id           = u.id
+    WHERE {$whereStr}
+  ";
   $stmtCount = $db->prepare($sqlCount);
-  $stmtCount->execute($params);
+  foreach ($params as $k => $v) $stmtCount->bindValue($k, $v);
+  $stmtCount->execute();
   $total = (int) $stmtCount->fetchColumn();
 
   echo json_encode([
     'ok'          => true,
     'propiedades' => $propiedades,
     'total'       => $total,
+    'pagina'      => $pagina,
+    'por_pagina'  => $porPagina,
+    'total_pags'  => (int) ceil($total / $porPagina),
   ]);
 
 } catch (Exception $e) {
   http_response_code(500);
-  echo json_encode(['ok' => false, 'msg' => 'Error al obtener propiedades.']);
+  echo json_encode(['ok' => false, 'msg' => 'Error del servidor.']);
 }

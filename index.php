@@ -61,12 +61,11 @@
         <label class="filtro-label">Tipo de propiedad</label>
         <select class="filtro-select" id="filtroTipo">
           <option value="">Todas</option>
-          <option>Casa</option>
-          <option>Apartamento</option>
-          <option>Local comercial</option>
-          <option>Terreno</option>
-          <option>Finca</option>
-          <option>Bodega</option>
+          <option value="Casa">Casa</option>
+          <option value="Apartamento">Apartamento</option>
+          <option value="Local comercial">Local comercial</option>
+          <option value="Terreno">Terreno</option>
+          <option value="Bodega">Bodega</option>
         </select>
       </div>
 
@@ -252,7 +251,7 @@
       <div class="props-grid" id="propsGrid">
 
         <article class="prop-card">
-          <a href="views/propiedades/detalle.php?id=2342" class="prop-card-link">
+          <a href="views/detalle.php?id=2342" class="prop-card-link">
             <div class="prop-img">
               <div class="prop-img-ph">🏡</div>
               <div class="prop-tags"><span class="ptag ptag-venta">VENTA</span></div>
@@ -271,7 +270,7 @@
         </article>
 
         <article class="prop-card">
-          <a href="views/propiedades/detalle.php?id=2343" class="prop-card-link">
+          <a href="views/detalle.php?id=2343" class="prop-card-link">
             <div class="prop-img">
               <div class="prop-img-ph">🌿</div>
               <div class="prop-tags"><span class="ptag ptag-venta">VENTA</span></div>
@@ -290,7 +289,7 @@
         </article>
 
         <article class="prop-card">
-          <a href="views/propiedades/detalle.php?id=2341" class="prop-card-link">
+          <a href="views/detalle.php?id=2341" class="prop-card-link">
             <div class="prop-img">
               <div class="prop-img-ph">🏖️</div>
               <div class="prop-tags"><span class="ptag ptag-venta">VENTA</span></div>
@@ -309,7 +308,7 @@
         </article>
 
         <article class="prop-card">
-          <a href="views/propiedades/detalle.php?id=2340" class="prop-card-link">
+          <a href="views/detalle.php?id=2340" class="prop-card-link">
             <div class="prop-img">
               <div class="prop-img-ph">🏠</div>
               <div class="prop-tags"><span class="ptag ptag-renta">RENTA</span></div>
@@ -328,7 +327,7 @@
         </article>
 
         <article class="prop-card">
-          <a href="views/propiedades/detalle.php?id=2339" class="prop-card-link">
+          <a href="views/detalle.php?id=2339" class="prop-card-link">
             <div class="prop-img">
               <div class="prop-img-ph">🏢</div>
               <div class="prop-tags"><span class="ptag ptag-renta">RENTA</span></div>
@@ -347,7 +346,7 @@
         </article>
 
         <article class="prop-card prop-card-destacada">
-          <a href="views/propiedades/detalle.php?id=2338" class="prop-card-link">
+          <a href="views/detalle.php?id=2338" class="prop-card-link">
             <div class="prop-img">
               <div class="prop-img-ph">🌄</div>
               <div class="prop-tags">
@@ -371,13 +370,8 @@
       </div>
 
       <!-- PAGINACIÓN -->
-      <div class="paginacion">
-        <button class="page-btn active">1</button>
-        <button class="page-btn">2</button>
-        <button class="page-btn">3</button>
-        <button class="page-btn">4</button>
-        <span class="page-dots">...</span>
-        <button class="page-btn">12</button>
+      <div class="paginacion" id="paginacion">
+        <!-- Se llena via JS -->
       </div>
 
     </main>

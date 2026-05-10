@@ -1,113 +1,146 @@
-/* Estilos específicos para la página de propiedades */
-.prop-title {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-width: 250px;
-}
+/* ============================================================
+   PP Bienes Raíces — propiedades.css
+   Vista admin — gestión de propiedades
+   ============================================================ */
 
-.prop-thumb {
-    width: 50px;
-    height: 50px;
-    border-radius: 8px;
-    overflow: hidden;
-    background: #f3f4f6;
-    flex-shrink: 0;
+/* ── Tabla loading / empty ── */
+.tabla-loading {
+  text-align: center;
+  padding: 48px 24px !important;
+  color: var(--muted);
+  font-size: .875rem;
 }
-
-.prop-thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.tabla-empty {
+  text-align: center;
+  padding: 48px 24px !important;
+  color: var(--muted);
+  font-size: .875rem;
 }
-
-.no-img {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #9ca3af;
-    font-size: 20px;
+.tabla-empty svg {
+  width: 40px; height: 40px;
+  color: var(--border);
+  margin: 0 auto 12px;
+  display: block;
 }
-
-.price {
-    font-weight: 600;
-    color: #10b981;
-    white-space: nowrap;
+.loading-spinner {
+  width: 24px; height: 24px;
+  border: 2px solid var(--border);
+  border-top-color: var(--navy);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  margin: 0 auto 10px;
 }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-.status-badge {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 500;
-    white-space: nowrap;
+/* ── Acciones en tabla ── */
+.acciones-cell { display: flex; gap: 5px; flex-wrap: wrap; }
+
+/* ── Modales ── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(15,15,46,.55);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center; justify-content: center;
+  padding: 20px;
 }
+.modal-overlay.open { display: flex; }
 
-.actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    min-width: 220px;
-}
-
-.action-select {
-    padding: 6px 8px;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    font-size: 12px;
-    background: white;
-    cursor: pointer;
-}
-
-.action-select:hover {
-    border-color: #3b82f6;
-}
-
-/* Modal */
 .modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
+  background: var(--white);
+  border-radius: var(--r-xl);
+  width: 100%; max-width: 560px;
+  max-height: 90vh; overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(0,0,0,.3);
+  animation: slideUp .25s ease;
+}
+.modal-lg { max-width: 820px; }
+.modal-sm { max-width: 440px; }
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.modal::-webkit-scrollbar { width: 4px; }
+.modal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.modal-header {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0;
+  background: var(--white); z-index: 1;
+}
+.modal-titulo { font-family: var(--font-d); font-size: 1.15rem; font-weight: 700; color: var(--navy); }
+.modal-cerrar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--bg); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted); transition: all var(--t);
+}
+.modal-cerrar:hover { background: var(--border); color: var(--text); }
+.modal-cerrar svg { width: 16px; height: 16px; }
+
+.modal-body { padding: 24px; }
+.modal-footer {
+  display: flex; align-items: center; justify-content: flex-end;
+  gap: 10px; padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  border-radius: 0 0 var(--r-xl) var(--r-xl);
 }
 
-.modal-content {
-    background-color: white;
-    margin: 5% auto;
-    padding: 20px;
-    width: 90%;
-    max-width: 800px;
-    border-radius: 12px;
-    max-height: 80vh;
-    overflow-y: auto;
+/* Confirm modal */
+.confirm-icon {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: rgba(249,115,22,.1);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px;
 }
+.confirm-icon svg { width: 26px; height: 26px; color: var(--orange, #f97316); }
+.confirm-msg { font-size: .9rem; color: var(--muted); text-align: center; line-height: 1.65; }
+.confirm-msg strong { color: var(--text); }
 
-.modal-close {
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-    color: #aaa;
+/* Select del modal estado */
+.form-input {
+  padding: 11px 14px;
+  border: 1.5px solid var(--border); border-radius: var(--r-sm);
+  font-family: var(--font-b); font-size: .9rem;
+  color: var(--text); background: var(--white);
+  outline: none; transition: all var(--t); width: 100%;
 }
+.form-input:focus { border-color: var(--navy); box-shadow: 0 0 0 3px rgba(26,25,83,.07); }
 
-.modal-close:hover {
-    color: #000;
+/* Botón danger sólido */
+.btn-panel-danger-solid {
+  background: var(--red, #ef4444); color: var(--white);
+  border-color: var(--red, #ef4444);
 }
+.btn-panel-danger-solid:hover { background: #dc2626; border-color: #dc2626; transform: translateY(-1px); }
 
-/* Responsive */
-@media (max-width: 1024px) {
-    .actions {
-        flex-direction: column;
-    }
-    
-    .prop-title {
-        min-width: 200px;
-    }
+/* ── Toast ── */
+.toast-wrap {
+  position: fixed; bottom: 24px; right: 24px;
+  z-index: 999; display: flex; flex-direction: column; gap: 10px;
+}
+.toast {
+  display: flex; align-items: center; gap: 10px;
+  padding: 13px 18px;
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--r-md); box-shadow: var(--sh-lg);
+  font-size: .875rem; font-weight: 500;
+  min-width: 280px; max-width: 360px;
+  transition: opacity .4s ease, transform .4s ease;
+}
+.toast-ok    { border-left: 4px solid var(--green, #22c55e); }
+.toast-error { border-left: 4px solid var(--red, #ef4444); }
+.toast-ok    svg { color: var(--green, #22c55e); width: 18px; height: 18px; flex-shrink: 0; }
+.toast-error svg { color: var(--red, #ef4444);   width: 18px; height: 18px; flex-shrink: 0; }
+
+@media (max-width: 640px) {
+  .modal { max-width: 100%; }
+  .toast-wrap { left: 16px; right: 16px; bottom: 16px; }
+  .toast { min-width: auto; }
+  .acciones-cell { flex-direction: column; }
 }

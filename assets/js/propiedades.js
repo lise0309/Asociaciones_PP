@@ -1,226 +1,364 @@
 /**
- * PROPIEDADES JS
- * PP Bienes Raíces
+ * propiedades.js
+ * PP Bienes Raíces — assets/js/propiedades.js
+ * Vista admin — gestión de todas las propiedades
  */
 
-let currentPage = 1;
-let currentFilters = {
-    buscar: '',
-    tipo_inmueble: '',
-    negocio: '',
-    estado: ''
-};
+(function () {
+  'use strict';
 
-// Cargar propiedades al inicio
-document.addEventListener('DOMContentLoaded', () => {
-    cargarPropiedades();
-    
-    // Event listeners
-    document.getElementById('filtroBuscar')?.addEventListener('input', debounce(() => {
-        currentFilters.buscar = document.getElementById('filtroBuscar').value;
-        currentPage = 1;
-        cargarPropiedades();
-    }, 500));
-    
-    document.getElementById('filtroTipoInmueble')?.addEventListener('change', (e) => {
-        currentFilters.tipo_inmueble = e.target.value;
-        currentPage = 1;
-        cargarPropiedades();
-    });
-    
-    document.getElementById('filtroNegocio')?.addEventListener('change', (e) => {
-        currentFilters.negocio = e.target.value;
-        currentPage = 1;
-        cargarPropiedades();
-    });
-    
-    document.getElementById('filtroEstado')?.addEventListener('change', (e) => {
-        currentFilters.estado = e.target.value;
-        currentPage = 1;
-        cargarPropiedades();
-    });
-    
-    document.getElementById('btnNuevaPropiedad')?.addEventListener('click', () => {
-        window.location.href = 'propiedad_form.php';
-    });
-    
-    // Modal cerrar
-    document.getElementById('modalDetalleCerrar')?.addEventListener('click', cerrarModalDetalle);
-    document.getElementById('btnCerrarDetalle')?.addEventListener('click', cerrarModalDetalle);
-    document.getElementById('modalDetalleOverlay')?.addEventListener('click', (e) => {
-        if (e.target === document.getElementById('modalDetalleOverlay')) cerrarModalDetalle();
-    });
-    
-    document.getElementById('modalEstadoCerrar')?.addEventListener('click', cerrarModalEstado);
-    document.getElementById('btnCancelarEstado')?.addEventListener('click', cerrarModalEstado);
-    document.getElementById('modalEstadoOverlay')?.addEventListener('click', (e) => {
-        if (e.target === document.getElementById('modalEstadoOverlay')) cerrarModalEstado();
-    });
-    
-    document.getElementById('modalEliminarCerrar')?.addEventListener('click', cerrarModalEliminar);
-    document.getElementById('btnCancelarEliminar')?.addEventListener('click', cerrarModalEliminar);
-    document.getElementById('modalEliminarOverlay')?.addEventListener('click', (e) => {
-        if (e.target === document.getElementById('modalEliminarOverlay')) cerrarModalEliminar();
-    });
-    
-    document.getElementById('btnConfirmarEliminar')?.addEventListener('click', confirmarEliminar);
-    document.getElementById('btnConfirmarEstado')?.addEventListener('click', confirmarCambioEstado);
-});
+  const API = '../controllers/propiedadController.php';
 
-async function cargarPropiedades() {
-    const tbody = document.getElementById('tablaBody');
-    tbody.innerHTML = `<tr><td colspan="9" class="tabla-loading"><div class="loading-spinner"></div>Cargando propiedades...</td></tr>`;
-    
+  // ── Referencias ──
+  const tablaBody      = document.getElementById('tablaBody');
+  const subtitulo      = document.getElementById('subtituloTabla');
+  const filtroBuscar   = document.getElementById('filtroBuscar');
+  const filtroTipo     = document.getElementById('filtroTipoInmueble');
+  const filtroNegocio  = document.getElementById('filtroNegocio');
+  const filtroEstado   = document.getElementById('filtroEstado');
+
+  // KPIs
+  const kpiTotal      = document.getElementById('kpiTotal');
+  const kpiActivas    = document.getElementById('kpiActivas');
+  const kpiPendientes = document.getElementById('kpiPendientes');
+  const kpiDestacadas = document.getElementById('kpiDestacadas');
+
+  // Modales
+  const modalDetalleOverlay  = document.getElementById('modalDetalleOverlay');
+  const modalEstadoOverlay   = document.getElementById('modalEstadoOverlay');
+  const modalEliminarOverlay = document.getElementById('modalEliminarOverlay');
+
+  let debounceTimer;
+
+  // ════════════════════════════════════════
+  // CARGAR PROPIEDADES
+  // ════════════════════════════════════════
+  async function cargar() {
+    tablaBody.innerHTML = `
+      <tr>
+        <td colspan="9" class="tabla-loading">
+          <div class="loading-spinner"></div>
+          Cargando propiedades...
+        </td>
+      </tr>`;
+
+    const params = new URLSearchParams({
+      accion:       'listar',
+      buscar:       filtroBuscar?.value    ?? '',
+      tipo_inmueble:filtroTipo?.value      ?? '',
+      negocio:      filtroNegocio?.value   ?? '',
+      estado:       filtroEstado?.value    ?? '',
+    });
+
     try {
-        const params = new URLSearchParams({
-            accion: 'listar',
-            pagina: currentPage,
-            ...currentFilters
-        });
-        
-        const response = await fetch(`${API_URL}?${params}`);
-        const data = await response.json();
-        
-        if (data.success) {
-            actualizarKPIs(data.kpis);
-            renderizarTabla(data.propiedades);
-            document.getElementById('subtituloTabla').textContent = `${data.total} propiedad(es) encontrada(s)`;
-        } else {
-            mostrarError(data.error || 'Error al cargar propiedades');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        mostrarError('Error de conexión al servidor');
-    }
-}
+      const res  = await fetch(`${API}?${params}`);
+      const data = await res.json();
 
-function renderizarTabla(propiedades) {
-    const tbody = document.getElementById('tablaBody');
-    
-    if (!propiedades || propiedades.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="tabla-empty"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg><p>No se encontraron propiedades</p></td></tr>`;
+      if (!data.ok) throw new Error(data.msg);
+
+      // KPIs
+      if (data.kpis) {
+        if (kpiTotal)      kpiTotal.textContent      = data.kpis.total      ?? 0;
+        if (kpiActivas)    kpiActivas.textContent    = data.kpis.activas    ?? 0;
+        if (kpiPendientes) kpiPendientes.textContent = data.kpis.pendientes ?? 0;
+        if (kpiDestacadas) kpiDestacadas.textContent = data.kpis.destacadas ?? 0;
+      }
+
+      subtitulo.textContent = `${data.total} propiedad(es) encontrada(s)`;
+
+      if (!data.propiedades.length) {
+        tablaBody.innerHTML = `
+          <tr>
+            <td colspan="9" class="tabla-empty">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
+              </svg>
+              No se encontraron propiedades con esos filtros.
+            </td>
+          </tr>`;
         return;
-    }
-    
-    tbody.innerHTML = propiedades.map(prop => `
-        <tr>
-            <td class="prop-titulo">
-                <div class="prop-thumb">
-                    ${prop.foto ? `<img src="../${prop.foto}" alt="${prop.titulo_anuncio}">` : '<div class="no-img">🏠</div>'}
-                </div>
-                <div class="prop-info">
-                    <strong>${escapeHtml(prop.titulo_anuncio.substring(0, 50))}</strong>
-                    <small>${escapeHtml(prop.direccion_exacta || 'Dirección no especificada')}</small>
-                </div>
-            </td>
-            <td>${escapeHtml(prop.tipo_inmueble)}</td>
-            <td>${escapeHtml(prop.tipo_negocio)}</td>
-            <td>${escapeHtml(prop.vendedor)}</td>
-            <td class="prop-precio">$${formatNumber(prop.precio_pedido)}</td>
-            <td>${escapeHtml(prop.departamento)}</td>
-            <td><span class="status-badge" style="background: ${prop.estado_color}20; color: ${prop.estado_color};">${escapeHtml(prop.estado_publicacion)}</span></td>
-            <td class="prop-destacada">${prop.es_anuncio_destacado ? '⭐ Sí' : '—'}</td>
-            <td class="acciones">
-                <button class="btn-icon" onclick="verDetalle('${prop.id}')" title="Ver detalles">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg>
-                </button>
-                <button class="btn-icon" onclick="abrirModalEstado('${prop.id}', '${escapeHtml(prop.titulo_anuncio)}')" title="Cambiar estado">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 01-7.876 2.03.75.75 0 01.334-1.329 4 4 0 003.644-5.93.75.75 0 011.27-.764 5.5 5.5 0 012.628 5.993zM12 1a1 1 0 01.707 1.707L9.414 6l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4A1 1 0 0112 1z" clip-rule="evenodd"/></svg>
-                </button>
-                <button class="btn-icon btn-icon-danger" onclick="abrirModalEliminar('${prop.id}', '${escapeHtml(prop.titulo_anuncio)}')" title="Eliminar">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clip-rule="evenodd"/></svg>
-                </button>
-            </td>
-        </tr>
-    `).join('');
-}
+      }
 
-async function verDetalle(id) {
-    const modal = document.getElementById('modalDetalleOverlay');
-    const body = document.getElementById('detalleBody');
-    const titulo = document.getElementById('detalleTitulo');
-    
-    modal.style.display = 'flex';
-    body.innerHTML = '<div class="loading-spinner"></div>Cargando detalles...';
-    
-    try {
-        const response = await fetch(`${API_URL}?accion=detalle&id=${id}`);
-        const data = await response.json();
-        
-        if (data.success) {
-            titulo.textContent = data.propiedad.titulo_anuncio;
-            body.innerHTML = renderDetalle(data.propiedad, data.fotos);
-        } else {
-            body.innerHTML = `<p class="error-msg">${data.error || 'Error al cargar detalles'}</p>`;
-        }
-    } catch (error) {
-        body.innerHTML = '<p class="error-msg">Error de conexión</p>';
-    }
-}
+      tablaBody.innerHTML = data.propiedades.map(p => renderFila(p)).join('');
+      bindAcciones();
 
-function renderDetalle(prop, fotos) {
+    } catch (err) {
+      tablaBody.innerHTML = `
+        <tr><td colspan="9" class="tabla-empty">
+          Error: ${err.message}
+        </td></tr>`;
+    }
+  }
+
+  // ════════════════════════════════════════
+  // RENDER FILA
+  // ════════════════════════════════════════
+  function renderFila(p) {
+    const precio     = `$${parseFloat(p.precio_pedido).toLocaleString('en-US', {minimumFractionDigits:0})}`;
+    const colorStyle = p.estado_color ? `background:${p.estado_color}20;color:${p.estado_color};` : '';
+    const foto       = p.foto
+      ? `<img src="../${p.foto}" alt="" style="width:36px;height:36px;border-radius:6px;object-fit:cover;">`
+      : `<div style="width:36px;height:36px;border-radius:6px;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:1rem;">🏠</div>`;
+
     return `
-        <div class="detalle-grid">
-            <div class="detalle-info">
-                <h4>Información general</h4>
-                <p><strong>Tipo:</strong> ${escapeHtml(prop.tipo_inmueble)}</p>
-                <p><strong>Negocio:</strong> ${escapeHtml(prop.tipo_negocio)}</p>
-                <p><strong>Precio:</strong> $${formatNumber(prop.precio_pedido)}</p>
-                <p><strong>Vendedor:</strong> ${escapeHtml(prop.vendedor)}</p>
-                <p><strong>Correo:</strong> ${escapeHtml(prop.correo_vendedor || 'No disponible')}</p>
-                <p><strong>Teléfono:</strong> ${escapeHtml(prop.telefono_vendedor || 'No disponible')}</p>
-                
-                <h4>Ubicación</h4>
-                <p><strong>Departamento:</strong> ${escapeHtml(prop.departamento)}</p>
-                <p><strong>Municipio:</strong> ${escapeHtml(prop.municipio)}</p>
-                <p><strong>Dirección:</strong> ${escapeHtml(prop.direccion_exacta || 'No especificada')}</p>
-                
-                <h4>Características</h4>
-                <p><strong>Habitaciones:</strong> ${prop.num_habitaciones || 'N/A'}</p>
-                <p><strong>Baños:</strong> ${prop.num_banos || 'N/A'}</p>
-                <p><strong>Metros construcción:</strong> ${prop.metros_construccion || 'N/A'} m²</p>
-                <p><strong>Estacionamiento:</strong> ${prop.tiene_estacionamiento ? 'Sí' : 'No'}</p>
-                <p><strong>Piscina:</strong> ${prop.tiene_piscina ? 'Sí' : 'No'}</p>
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:10px;">
+            ${foto}
+            <div>
+              <div style="font-weight:600;font-size:.84rem;">${esc(p.titulo_anuncio)}</div>
+              <div style="font-size:.74rem;color:var(--muted);">${esc(p.direccion_exacta ?? '')} ${esc(p.municipio ?? '')}</div>
             </div>
-            ${fotos && fotos.length > 0 ? `
-                <div class="detalle-fotos">
-                    <h4>Fotos (${fotos.length})</h4>
-                    <div class="fotos-grid">
-                        ${fotos.map(foto => `
-                            <img src="../${foto.url_foto_miniatura || foto.url_foto_original}" alt="Foto propiedad" onclick="window.open('../${foto.url_foto_original}', '_blank')">
-                        `).join('')}
-                    </div>
-                </div>
-            ` : '<div class="detalle-fotos"><p>No hay fotos disponibles</p></div>'}
-        </div>
-        ${prop.descripcion_detallada ? `<div class="detalle-descripcion"><h4>Descripción</h4><p>${escapeHtml(prop.descripcion_detallada)}</p></div>` : ''}
-    `;
-}
+          </div>
+        </td>
+        <td style="font-size:.84rem;">${esc(p.tipo_inmueble)}</td>
+        <td>
+          <span class="badge ${p.tipo_negocio === 'Venta' ? 'badge-vendedor' : 'badge-activa'}">
+            ${esc(p.tipo_negocio)}
+          </span>
+        </td>
+        <td>
+          <div style="font-size:.84rem;font-weight:500;">${esc(p.vendedor)}</div>
+          <div style="font-size:.74rem;color:var(--muted);">${esc(p.correo_vendedor ?? '')}</div>
+        </td>
+        <td style="font-weight:700;color:var(--navy);">${precio}</td>
+        <td style="font-size:.84rem;">${esc(p.departamento)}</td>
+        <td>
+          <span class="badge" style="${colorStyle}">${esc(p.estado_publicacion)}</span>
+        </td>
+        <td style="text-align:center;">
+          ${p.es_anuncio_destacado == 1 ? '<span title="Destacada">⭐</span>' : '—'}
+        </td>
+        <td>
+          <div class="acciones-cell">
+            <button class="btn-panel btn-panel-outline btn-panel-sm btn-ver"
+                    data-id="${p.id}">Ver</button>
+            <button class="btn-panel btn-panel-primary btn-panel-sm btn-estado"
+                    data-id="${p.id}" data-titulo="${esc(p.titulo_anuncio)}">Estado</button>
+            <button class="btn-panel btn-panel-danger btn-panel-sm btn-eliminar"
+                    data-id="${p.id}" data-titulo="${esc(p.titulo_anuncio)}">Eliminar</button>
+          </div>
+        </td>
+      </tr>`;
+  }
 
-function cerrarModalDetalle() {
-    document.getElementById('modalDetalleOverlay').style.display = 'none';
-}
+  // ════════════════════════════════════════
+  // BIND ACCIONES
+  // ════════════════════════════════════════
+  function bindAcciones() {
+    tablaBody.querySelectorAll('.btn-ver').forEach(btn =>
+      btn.addEventListener('click', () => abrirDetalle(btn.dataset.id))
+    );
+    tablaBody.querySelectorAll('.btn-estado').forEach(btn =>
+      btn.addEventListener('click', () => abrirModalEstado(btn.dataset.id, btn.dataset.titulo))
+    );
+    tablaBody.querySelectorAll('.btn-eliminar').forEach(btn =>
+      btn.addEventListener('click', () => abrirModalEliminar(btn.dataset.id, btn.dataset.titulo))
+    );
+  }
 
-// Funciones auxiliares
-function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-    });
-}
+  // ════════════════════════════════════════
+  // MODAL VER DETALLE
+  // ════════════════════════════════════════
+  async function abrirDetalle(id) {
+    const body   = document.getElementById('detalleBody');
+    const titulo = document.getElementById('detalleTitulo');
+    body.innerHTML = '<div class="loading-spinner"></div>';
+    abrirModal(modalDetalleOverlay);
 
-function formatNumber(num) {
-    return new Intl.NumberFormat('es-SV').format(num);
-}
+    try {
+      const res  = await fetch(`${API}?accion=detalle&id=${id}`);
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.msg);
 
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-        }
+      const p = data.propiedad;
+      titulo.textContent = p.titulo_anuncio;
+
+      body.innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+          <div>
+            <h4 style="font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">Información general</h4>
+            <table style="width:100%;font-size:.875rem;border-collapse:collapse;">
+              <tr><td style="padding:5px 0;color:var(--muted);width:45%;">Tipo inmueble</td><td style="font-weight:500;">${esc(p.tipo_inmueble)}</td></tr>
+              <tr><td style="padding:5px 0;color:var(--muted);">Tipo negocio</td><td style="font-weight:500;">${esc(p.tipo_negocio)}</td></tr>
+              <tr><td style="padding:5px 0;color:var(--muted);">Precio</td><td style="font-weight:700;color:var(--navy);">$${parseFloat(p.precio_pedido).toLocaleString()}</td></tr>
+              <tr><td style="padding:5px 0;color:var(--muted);">Vendedor</td><td style="font-weight:500;">${esc(p.vendedor)}</td></tr>
+              <tr><td style="padding:5px 0;color:var(--muted);">Correo</td><td>${esc(p.correo_vendedor ?? '—')}</td></tr>
+              <tr><td style="padding:5px 0;color:var(--muted);">Teléfono</td><td>${esc(p.telefono_vendedor ?? '—')}</td></tr>
+            </table>
+
+            <h4 style="font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:16px 0 12px;">Ubicación</h4>
+            <table style="width:100%;font-size:.875rem;border-collapse:collapse;">
+              <tr><td style="padding:5px 0;color:var(--muted);width:45%;">Departamento</td><td>${esc(p.departamento)}</td></tr>
+              <tr><td style="padding:5px 0;color:var(--muted);">Municipio</td><td>${esc(p.municipio)}</td></tr>
+              <tr><td style="padding:5px 0;color:var(--muted);">Dirección</td><td>${esc(p.direccion_exacta ?? '—')}</td></tr>
+            </table>
+
+            <h4 style="font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:16px 0 12px;">Características</h4>
+            <table style="width:100%;font-size:.875rem;border-collapse:collapse;">
+              <tr><td style="padding:5px 0;color:var(--muted);width:45%;">Habitaciones</td><td>${p.num_habitaciones ?? '—'}</td></tr>
+              <tr><td style="padding:5px 0;color:var(--muted);">Baños</td><td>${p.num_banos ?? '—'}</td></tr>
+              <tr><td style="padding:5px 0;color:var(--muted);">Metros terreno</td><td>${p.metros_terreno ? p.metros_terreno + ' m²' : '—'}</td></tr>
+              <tr><td style="padding:5px 0;color:var(--muted);">Estacionamiento</td><td>${p.tiene_estacionamiento == 1 ? 'Sí' : 'No'}</td></tr>
+              <tr><td style="padding:5px 0;color:var(--muted);">Piscina</td><td>${p.tiene_piscina == 1 ? 'Sí' : 'No'}</td></tr>
+              <tr><td style="padding:5px 0;color:var(--muted);">Amueblado</td><td>${p.viene_amueblado == 1 ? 'Sí' : 'No'}</td></tr>
+            </table>
+          </div>
+          <div>
+            <h4 style="font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">Fotos (${data.fotos.length})</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              ${data.fotos.length
+                ? data.fotos.map(f => `
+                    <img src="../${esc(f.url_foto_miniatura || f.url_foto_original)}"
+                         style="width:100%;height:90px;object-fit:cover;border-radius:8px;cursor:pointer;"
+                         onclick="window.open('../${esc(f.url_foto_original)}','_blank')"
+                         onerror="this.style.display='none'">`).join('')
+                : '<p style="color:var(--muted);font-size:.875rem;">Sin fotos</p>'
+              }
+            </div>
+            ${p.descripcion_detallada ? `
+              <h4 style="font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:16px 0 8px;">Descripción</h4>
+              <p style="font-size:.875rem;color:var(--muted);line-height:1.65;">${esc(p.descripcion_detallada)}</p>
+            ` : ''}
+          </div>
+        </div>`;
+
+    } catch (err) {
+      body.innerHTML = `<p style="color:var(--red);">Error: ${err.message}</p>`;
     }
-}
+  }
+
+  document.getElementById('modalDetalleCerrar')?.addEventListener('click', () => cerrarModal(modalDetalleOverlay));
+  document.getElementById('btnCerrarDetalle')?.addEventListener('click',   () => cerrarModal(modalDetalleOverlay));
+  modalDetalleOverlay?.addEventListener('click', e => { if (e.target === modalDetalleOverlay) cerrarModal(modalDetalleOverlay); });
+
+  // ════════════════════════════════════════
+  // MODAL CAMBIAR ESTADO
+  // ════════════════════════════════════════
+  async function abrirModalEstado(id, titulo) {
+    document.getElementById('propiedadEstadoId').value     = id;
+    document.getElementById('propiedadEstadoNombre').textContent = titulo;
+
+    // Cargar opciones de estado
+    const select = document.getElementById('selectNuevoEstado');
+    select.innerHTML = '<option value="">Cargando...</option>';
+    abrirModal(modalEstadoOverlay);
+
+    try {
+      const res  = await fetch(`${API}?accion=estados`);
+      const data = await res.json();
+      select.innerHTML = '<option value="">Seleccionar estado...</option>' +
+        data.estados.map(e =>
+          `<option value="${e.id}">${esc(e.nombre_opcion)}</option>`
+        ).join('');
+    } catch {
+      select.innerHTML = '<option value="">Error al cargar</option>';
+    }
+  }
+
+  document.getElementById('btnConfirmarEstado')?.addEventListener('click', async () => {
+    const id       = document.getElementById('propiedadEstadoId').value;
+    const estadoId = document.getElementById('selectNuevoEstado').value;
+
+    if (!estadoId) { toast('Selecciona un estado.', 'error'); return; }
+
+    const body = new FormData();
+    body.append('id',        id);
+    body.append('estado_id', estadoId);
+
+    const res  = await fetch(`${API}?accion=estado`, { method: 'POST', body });
+    const data = await res.json();
+
+    cerrarModal(modalEstadoOverlay);
+    toast(data.msg, data.ok ? 'ok' : 'error');
+    if (data.ok) cargar();
+  });
+
+  document.getElementById('btnCancelarEstado')?.addEventListener('click',  () => cerrarModal(modalEstadoOverlay));
+  document.getElementById('modalEstadoCerrar')?.addEventListener('click',  () => cerrarModal(modalEstadoOverlay));
+  modalEstadoOverlay?.addEventListener('click', e => { if (e.target === modalEstadoOverlay) cerrarModal(modalEstadoOverlay); });
+
+  // ════════════════════════════════════════
+  // MODAL ELIMINAR
+  // ════════════════════════════════════════
+  function abrirModalEliminar(id, titulo) {
+    document.getElementById('idEliminar').value        = id;
+    document.getElementById('nombreEliminar').textContent = titulo;
+    abrirModal(modalEliminarOverlay);
+  }
+
+  document.getElementById('btnConfirmarEliminar')?.addEventListener('click', async () => {
+    const id = document.getElementById('idEliminar').value;
+    const body = new FormData();
+    body.append('id', id);
+
+    const res  = await fetch(`${API}?accion=eliminar`, { method: 'POST', body });
+    const data = await res.json();
+
+    cerrarModal(modalEliminarOverlay);
+    toast(data.msg, data.ok ? 'ok' : 'error');
+    if (data.ok) cargar();
+  });
+
+  document.getElementById('btnCancelarEliminar')?.addEventListener('click', () => cerrarModal(modalEliminarOverlay));
+  document.getElementById('modalEliminarCerrar')?.addEventListener('click', () => cerrarModal(modalEliminarOverlay));
+  modalEliminarOverlay?.addEventListener('click', e => { if (e.target === modalEliminarOverlay) cerrarModal(modalEliminarOverlay); });
+
+  // ════════════════════════════════════════
+  // HELPERS
+  // ════════════════════════════════════════
+  function abrirModal(overlay)  { overlay?.classList.add('open'); }
+  function cerrarModal(overlay) { overlay?.classList.remove('open'); }
+
+  function esc(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function toast(msg, tipo = 'ok') {
+    const wrap = document.getElementById('toastWrap');
+    if (!wrap) return;
+    const icono = tipo === 'ok'
+      ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/></svg>`
+      : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>`;
+
+    const t = document.createElement('div');
+    t.className = `toast toast-${tipo}`;
+    t.innerHTML = `${icono}<span>${msg}</span>`;
+    wrap.appendChild(t);
+    setTimeout(() => {
+      t.style.opacity = '0'; t.style.transform = 'translateX(10px)';
+      setTimeout(() => t.remove(), 400);
+    }, 3500);
+  }
+
+  // Debounce filtros
+  function debounce(fn) {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(fn, 350);
+  }
+
+  // ════════════════════════════════════════
+  // EVENT LISTENERS
+  // ════════════════════════════════════════
+  filtroBuscar?.addEventListener('input',  () => debounce(cargar));
+  filtroTipo?.addEventListener('change',   cargar);
+  filtroNegocio?.addEventListener('change',cargar);
+  filtroEstado?.addEventListener('change', cargar);
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      cerrarModal(modalDetalleOverlay);
+      cerrarModal(modalEstadoOverlay);
+      cerrarModal(modalEliminarOverlay);
+    }
+  });
+
+  // Inicializar
+  cargar();
+
+})();
