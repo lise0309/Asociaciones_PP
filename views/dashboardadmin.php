@@ -59,7 +59,7 @@ $breadcrumb    = [
           <div class="kpi-data">
             <div class="kpi-label">Propiedades activas</div>
             <div class="kpi-valor">868</div>
-            <div class="kpi-sub kpi-sub-up">↑ +12 este mes</div>
+           
           </div>
         </div>
 
@@ -72,7 +72,7 @@ $breadcrumb    = [
           <div class="kpi-data">
             <div class="kpi-label">Usuarios registrados</div>
             <div class="kpi-valor">142</div>
-            <div class="kpi-sub kpi-sub-up">↑ +8 este mes</div>
+            
           </div>
         </div>
 
@@ -85,7 +85,7 @@ $breadcrumb    = [
           <div class="kpi-data">
             <div class="kpi-label">Contratos activos</div>
             <div class="kpi-valor">48</div>
-            <div class="kpi-sub kpi-sub-up">↑ +5 este mes</div>
+            
           </div>
         </div>
 
@@ -99,7 +99,7 @@ $breadcrumb    = [
           <div class="kpi-data">
             <div class="kpi-label">Valor total contratos</div>
             <div class="kpi-valor">$8.4M</div>
-            <div class="kpi-sub kpi-sub-up">↑ +$1.2M este año</div>
+            
           </div>
         </div>
 
