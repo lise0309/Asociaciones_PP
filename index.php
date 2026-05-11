@@ -125,23 +125,8 @@
         </div>
       </div>
 
-      <!-- Moneda -->
-      <div class="filtro-grupo">
-        <label class="filtro-label">Moneda</label>
-        <div class="filtro-pills" id="filtroMoneda">
-          <button class="pill active" data-val="usd">USD</button>
-          <button class="pill" data-val="eur">€ EUR</button>
-          <button class="pill" data-val="btc">₿ BTC</button>
-        </div>
-      </div>
-
+      <!-- SOLO BOTÓN LIMPIAR (sin botón buscar) -->
       <div class="filtro-actions">
-        <button class="btn-buscar" id="btnBuscar">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"/>
-          </svg>
-          Buscar propiedades
-        </button>
         <button class="btn-limpiar" id="btnLimpiar">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4z" clip-rule="evenodd"/>
@@ -179,15 +164,15 @@
             </p>
             <div class="hero-stats">
               <div class="hero-stat">
-                <span class="stat-num" data-count="868">0</span>
+                <span class="stat-num" data-count="0">0</span>
                 <span class="stat-lbl">Propiedades activas</span>
               </div>
               <div class="hero-stat">
-                <span class="stat-num" data-count="14">0</span>
+                <span class="stat-num" data-count="0">0</span>
                 <span class="stat-lbl">Departamentos</span>
               </div>
               <div class="hero-stat">
-                <span class="stat-num" data-count="120">0</span>
+                <span class="stat-num" data-count="0">0</span>
                 <span class="stat-lbl">Agentes expertos</span>
               </div>
               <div class="hero-stat">
@@ -226,7 +211,7 @@
       <div class="resultados-bar">
         <div class="resultados-left">
           <span class="resultados-count">
-            <strong id="totalCount">868</strong> propiedades encontradas
+            <strong id="totalCount">0</strong> propiedades encontradas
           </span>
           <!-- Botón filtros solo en móvil -->
           <button class="btn-filtros-mobile" id="btnFiltrosMobile">
@@ -249,124 +234,7 @@
 
       <!-- GRID PROPIEDADES -->
       <div class="props-grid" id="propsGrid">
-
-        <article class="prop-card">
-          <a href="views/detalle.php?id=2342" class="prop-card-link">
-            <div class="prop-img">
-              <div class="prop-img-ph">🏡</div>
-              <div class="prop-tags"><span class="ptag ptag-venta">VENTA</span></div>
-              <span class="prop-codigo">#2342</span>
-            </div>
-            <div class="prop-body">
-              <div class="prop-price">US$ 298,000 <small>venta</small></div>
-              <h3 class="prop-titulo">Finca de Café con vivienda principal</h3>
-              <div class="prop-loc">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd"/></svg>
-                Jayaque, La Libertad
-              </div>
-              <div class="prop-feats"><span>🚪 2 hab.</span><span>🛁 2 baños</span><span>📐 4.2 mz</span></div>
-            </div>
-          </a>
-        </article>
-
-        <article class="prop-card">
-          <a href="views/detalle.php?id=2343" class="prop-card-link">
-            <div class="prop-img">
-              <div class="prop-img-ph">🌿</div>
-              <div class="prop-tags"><span class="ptag ptag-venta">VENTA</span></div>
-              <span class="prop-codigo">#2343</span>
-            </div>
-            <div class="prop-body">
-              <div class="prop-price">US$ 330,000 <small>venta</small></div>
-              <h3 class="prop-titulo">Terreno residencial con vista panorámica</h3>
-              <div class="prop-loc">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd"/></svg>
-                San José Villanueva, La Libertad
-              </div>
-              <div class="prop-feats"><span>📐 2,500 m²</span><span>🌳 Vista montaña</span></div>
-            </div>
-          </a>
-        </article>
-
-        <article class="prop-card">
-          <a href="views/detalle.php?id=2341" class="prop-card-link">
-            <div class="prop-img">
-              <div class="prop-img-ph">🏖️</div>
-              <div class="prop-tags"><span class="ptag ptag-venta">VENTA</span></div>
-              <span class="prop-codigo">#2341</span>
-            </div>
-            <div class="prop-body">
-              <div class="prop-price">US$ 140,000 <small>venta</small></div>
-              <h3 class="prop-titulo">Terreno frente al mar con acceso directo</h3>
-              <div class="prop-loc">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd"/></svg>
-                La Libertad, La Libertad
-              </div>
-              <div class="prop-feats"><span>📐 1,200 m²</span><span>🌊 Frente al mar</span></div>
-            </div>
-          </a>
-        </article>
-
-        <article class="prop-card">
-          <a href="views/detalle.php?id=2340" class="prop-card-link">
-            <div class="prop-img">
-              <div class="prop-img-ph">🏠</div>
-              <div class="prop-tags"><span class="ptag ptag-renta">RENTA</span></div>
-              <span class="prop-codigo">#2340</span>
-            </div>
-            <div class="prop-body">
-              <div class="prop-price">US$ 1,200 <small>/mes</small></div>
-              <h3 class="prop-titulo">Casa residencial totalmente amueblada</h3>
-              <div class="prop-loc">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd"/></svg>
-                Santa Tecla, La Libertad
-              </div>
-              <div class="prop-feats"><span>🚪 3 hab.</span><span>🛁 2 baños</span><span>📐 220 m²</span></div>
-            </div>
-          </a>
-        </article>
-
-        <article class="prop-card">
-          <a href="views/detalle.php?id=2339" class="prop-card-link">
-            <div class="prop-img">
-              <div class="prop-img-ph">🏢</div>
-              <div class="prop-tags"><span class="ptag ptag-renta">RENTA</span></div>
-              <span class="prop-codigo">#2339</span>
-            </div>
-            <div class="prop-body">
-              <div class="prop-price">US$ 2,400 <small>/mes</small></div>
-              <h3 class="prop-titulo">Local comercial en zona céntrica</h3>
-              <div class="prop-loc">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd"/></svg>
-                San Salvador, San Salvador
-              </div>
-              <div class="prop-feats"><span>📐 180 m²</span><span>📍 Zona rosa</span></div>
-            </div>
-          </a>
-        </article>
-
-        <article class="prop-card prop-card-destacada">
-          <a href="views/detalle.php?id=2338" class="prop-card-link">
-            <div class="prop-img">
-              <div class="prop-img-ph">🌄</div>
-              <div class="prop-tags">
-                <span class="ptag ptag-venta">VENTA</span>
-                <span class="ptag ptag-star">★ Destacada</span>
-              </div>
-              <span class="prop-codigo">#2338</span>
-            </div>
-            <div class="prop-body">
-              <div class="prop-price">US$ 195,000 <small>venta</small></div>
-              <h3 class="prop-titulo">Casa estilo colonial con jardín amplio</h3>
-              <div class="prop-loc">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd"/></svg>
-                Santa Tecla, La Libertad
-              </div>
-              <div class="prop-feats"><span>🚪 4 hab.</span><span>🛁 3 baños</span><span>📐 320 m²</span></div>
-            </div>
-          </a>
-        </article>
-
+        <!-- Las propiedades se cargan aquí vía JS -->
       </div>
 
       <!-- PAGINACIÓN -->
@@ -382,6 +250,7 @@
 
   <?php include 'views/layouts/footer.php'; ?>
 
+  <!-- URLs para JS -->
   <script>
     const PROP_URL = 'controllers/PropiedadController.php';
   </script>
