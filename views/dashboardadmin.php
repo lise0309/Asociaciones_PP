@@ -30,6 +30,7 @@ $breadcrumb    = [
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../assets/css/panel.css">
   <link rel="stylesheet" href="../assets/css/footer.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
 
@@ -48,13 +49,11 @@ $breadcrumb    = [
     <div class="panel-content">
 
       <!-- ════ KPIs GLOBALES ════ -->
-      <div class="kpi-grid">
+<div class="kpi-grid">
 
         <div class="kpi-card">
           <div class="kpi-icon kpi-icon-navy">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clip-rule="evenodd"/>
-            </svg>
+            <i class="fas fa-home"></i>
           </div>
           <div class="kpi-data">
             <div class="kpi-label">Propiedades activas</div>
@@ -65,9 +64,7 @@ $breadcrumb    = [
 
         <div class="kpi-card">
           <div class="kpi-icon kpi-icon-blue">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M7 8a3 3 0 100-6 3 3 0 000 6zM14.5 9a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM1.615 16.428a1.224 1.224 0 01-.569-1.175 6.002 6.002 0 0111.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 017 18a9.953 9.953 0 01-5.385-1.572zM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 00-1.588-3.755 4.502 4.502 0 015.874 2.575c.092.341-.051.703-.345.878A9.969 9.969 0 0114.5 16z"/>
-            </svg>
+            <i class="fas fa-users"></i>
           </div>
           <div class="kpi-data">
             <div class="kpi-label">Usuarios registrados</div>
@@ -78,9 +75,7 @@ $breadcrumb    = [
 
         <div class="kpi-card">
           <div class="kpi-icon kpi-icon-gold">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
-            </svg>
+            <i class="fas fa-file-contract"></i>
           </div>
           <div class="kpi-data">
             <div class="kpi-label">Contratos activos</div>
@@ -91,15 +86,23 @@ $breadcrumb    = [
 
         <div class="kpi-card">
           <div class="kpi-icon kpi-icon-green">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M10.75 10.818v2.614A3.13 3.13 0 0011.888 13c.482-.315.612-.648.612-.875 0-.227-.13-.56-.612-.875a3.13 3.13 0 00-1.138-.432zM8.33 8.62c.053.055.115.11.184.164.208.16.46.284.736.363V6.603a2.45 2.45 0 00-.35.13c-.14.065-.27.143-.386.233-.377.292-.514.627-.514.909 0 .184.058.39.33.615z"/>
-              <path fill-rule="evenodd" d="M9.99 1.012a9 9 0 100 18 9 9 0 000-18zM9.25 4a.75.75 0 011.5 0v.665c.628.112 1.227.372 1.686.74.706.566 1.064 1.353 1.064 2.095 0 .98-.508 1.733-1.056 2.261l-.172.163c.18.128.35.275.498.437.413.461.68 1.1.68 1.839 0 .98-.508 1.733-1.056 2.261-.386.37-.888.655-1.444.793V18a.75.75 0 01-1.5 0v-.689A4.312 4.312 0 016.516 16c-.413-.46-.68-1.1-.68-1.839a.75.75 0 011.5 0c0 .307.134.682.532.977a3.1 3.1 0 001.382.484V12.43a4.323 4.323 0 01-1.695-.768C6.573 11.16 6.25 10.31 6.25 9.5c0-.893.417-1.686 1.061-2.264A4.312 4.312 0 019.25 6.39V4z" clip-rule="evenodd"/>
-            </svg>
+            <i class="fas fa-dollar-sign"></i>
           </div>
           <div class="kpi-data">
             <div class="kpi-label">Valor total contratos</div>
             <div class="kpi-valor">$8.4M</div>
             <div class="kpi-sub kpi-sub-up">↑ +$1.2M este año</div>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-icon-navy">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <div class="kpi-data">
+            <div class="kpi-label">Ventas este mes</div>
+            <div class="kpi-valor">23</div>
+            <div class="kpi-sub kpi-sub-up">↑ +4 vs mes anterior</div>
           </div>
         </div>
 
