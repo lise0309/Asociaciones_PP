@@ -22,180 +22,191 @@ $metodo = $_SERVER['REQUEST_METHOD'];
 try {
   $db = Database::conectar();
 
-  // ── LISTAR ──────────────────────────────────────────────
+  // ══════════════════════════════════════
+  // LISTAR
+  // ══════════════════════════════════════
   if ($accion === 'listar' && $metodo === 'GET') {
 
     $where  = ['1=1'];
     $params = [];
 
     if (!empty($_GET['buscar'])) {
-      $where[]           = '(p.titulo_anuncio LIKE :buscar OR p.municipio LIKE :buscar OR p.departamento LIKE :buscar OR CONCAT(u.nombre," ",u.apellido) LIKE :buscar)';
-      $params[':buscar'] = '%' . trim($_GET['buscar']) . '%';
+      $where[]           = '(p.titulo_anuncio LIKE :b OR p.municipio LIKE :b OR p.departamento LIKE :b)';
+      $params[':b']      = '%' . trim($_GET['buscar']) . '%';
     }
     if (!empty($_GET['tipo_inmueble'])) {
-      $where[]         = 'os_tip.nombre_opcion = :tipo';
-      $params[':tipo'] = $_GET['tipo_inmueble'];
+      $where[]           = 'COALESCE(os_tip.nombre_opcion,"") = :tip';
+      $params[':tip']    = $_GET['tipo_inmueble'];
     }
     if (!empty($_GET['negocio'])) {
-      $where[]            = 'os_neg.nombre_opcion = :negocio';
-      $params[':negocio'] = $_GET['negocio'];
+      $where[]           = 'COALESCE(os_neg.nombre_opcion,"") = :neg';
+      $params[':neg']    = $_GET['negocio'];
     }
     if (!empty($_GET['estado'])) {
-      $where[]           = 'os_est.nombre_opcion = :estado';
-      $params[':estado'] = $_GET['estado'];
+      $where[]           = 'COALESCE(os_est.nombre_opcion,"") = :est';
+      $params[':est']    = $_GET['estado'];
     }
 
-    // LEFT JOIN para no perder propiedades aunque falte algún dato
-    $sql = '
+    $whereStr = implode(' AND ', $where);
+
+    $propiedades = $db->prepare("
       SELECT
-        p.id, p.titulo_anuncio, p.precio_pedido, p.moneda,
-        p.departamento, p.municipio, p.direccion_exacta,
-        p.num_habitaciones, p.num_banos, p.metros_terreno,
-        p.es_anuncio_destacado, p.fecha_actualizacion,
-        COALESCE(os_tip.nombre_opcion, "Sin tipo")    AS tipo_inmueble,
-        COALESCE(os_neg.nombre_opcion, "Sin negocio") AS tipo_negocio,
-        COALESCE(os_est.nombre_opcion, "Sin estado")  AS estado_publicacion,
-        COALESCE(os_est.valor_extra, "#6B7280")       AS estado_color,
-        COALESCE(CONCAT(u.nombre," ",u.apellido), "Sin vendedor") AS vendedor,
-        COALESCE(u.correo, "")    AS correo_vendedor,
-        COALESCE(u.telefono, "")  AS telefono_vendedor,
+        p.id,
+        p.titulo_anuncio,
+        p.precio_pedido,
+        p.moneda,
+        p.departamento,
+        p.municipio,
+        p.direccion_exacta,
+        p.num_habitaciones,
+        p.num_banos,
+        p.metros_terreno,
+        p.es_anuncio_destacado,
+        p.fecha_actualizacion,
+        COALESCE(os_tip.nombre_opcion, '—') AS tipo_inmueble,
+        COALESCE(os_neg.nombre_opcion, '—') AS tipo_negocio,
+        COALESCE(os_est.nombre_opcion, 'Sin estado') AS estado_publicacion,
+        COALESCE(os_est.valor_extra, '#6B7280') AS estado_color,
+        COALESCE(CONCAT(u.nombre, ' ', u.apellido), 'Sin vendedor') AS vendedor,
+        COALESCE(u.correo, '') AS correo_vendedor,
+        COALESCE(u.telefono, '') AS telefono_vendedor,
         (SELECT url_foto_miniatura FROM fotos_propiedad
          WHERE propiedad_id = p.id AND es_foto_portada = 1 LIMIT 1) AS foto
-      FROM   propiedades p
+      FROM propiedades p
       LEFT JOIN opciones_sistema os_tip ON os_tip.id = p.tipo_inmueble_id
+        AND os_tip.categoria = 'tipo_inmueble'
       LEFT JOIN opciones_sistema os_neg ON os_neg.id = p.tipo_negocio_id
+        AND os_neg.categoria = 'tipo_negocio'
       LEFT JOIN opciones_sistema os_est ON os_est.id = p.estado_publicacion_id
-      LEFT JOIN usuarios u               ON u.id      = p.vendedor_id
-      WHERE  ' . implode(' AND ', $where) . '
-      ORDER  BY p.fecha_actualizacion DESC
-      LIMIT  200
-    ';
+        AND os_est.categoria = 'estado_publicacion'
+      LEFT JOIN usuarios u ON u.id = p.vendedor_id
+      WHERE $whereStr
+      ORDER BY p.fecha_actualizacion DESC
+      LIMIT 200
+    ");
+    $propiedades->execute($params);
+    $rows = $propiedades->fetchAll();
 
-    $stmt = $db->prepare($sql);
-    $stmt->execute($params);
-    $propiedades = $stmt->fetchAll();
-
-    // KPIs — también con LEFT JOIN
-    $kpis = $db->query('
+    // KPIs
+    $kpis = $db->query("
       SELECT
-        COUNT(*)                                                      AS total,
-        SUM(CASE WHEN os.nombre_opcion = "Activa" THEN 1 ELSE 0 END) AS activas,
-        SUM(CASE WHEN os.nombre_opcion = "Pendiente aprobación" THEN 1 ELSE 0 END) AS pendientes,
-        SUM(CASE WHEN p.es_anuncio_destacado = 1 THEN 1 ELSE 0 END)  AS destacadas
+        COUNT(*) AS total,
+        SUM(CASE WHEN os.nombre_opcion = 'Activa' THEN 1 ELSE 0 END) AS activas,
+        SUM(CASE WHEN os.nombre_opcion = 'Pendiente aprobación' THEN 1 ELSE 0 END) AS pendientes,
+        SUM(CASE WHEN p.es_anuncio_destacado = 1 THEN 1 ELSE 0 END) AS destacadas
       FROM propiedades p
       LEFT JOIN opciones_sistema os ON os.id = p.estado_publicacion_id
-    ')->fetch();
+        AND os.categoria = 'estado_publicacion'
+    ")->fetch();
 
     // Total filtrado
-    $sqlCount = '
+    $cnt = $db->prepare("
       SELECT COUNT(*) FROM propiedades p
-      LEFT JOIN opciones_sistema os_tip ON os_tip.id = p.tipo_inmueble_id
-      LEFT JOIN opciones_sistema os_neg ON os_neg.id = p.tipo_negocio_id
-      LEFT JOIN opciones_sistema os_est ON os_est.id = p.estado_publicacion_id
-      LEFT JOIN usuarios u              ON u.id       = p.vendedor_id
-      WHERE ' . implode(' AND ', $where);
-    $stmtCount = $db->prepare($sqlCount);
-    $stmtCount->execute($params);
-    $total = (int) $stmtCount->fetchColumn();
+      LEFT JOIN opciones_sistema os_tip ON os_tip.id = p.tipo_inmueble_id AND os_tip.categoria = 'tipo_inmueble'
+      LEFT JOIN opciones_sistema os_neg ON os_neg.id = p.tipo_negocio_id  AND os_neg.categoria = 'tipo_negocio'
+      LEFT JOIN opciones_sistema os_est ON os_est.id = p.estado_publicacion_id AND os_est.categoria = 'estado_publicacion'
+      LEFT JOIN usuarios u ON u.id = p.vendedor_id
+      WHERE $whereStr
+    ");
+    $cnt->execute($params);
 
     echo json_encode([
       'ok'          => true,
-      'propiedades' => $propiedades,
-      'total'       => $total,
+      'propiedades' => $rows,
+      'total'       => (int) $cnt->fetchColumn(),
       'kpis'        => $kpis,
     ]);
     exit;
   }
 
-  // ── DETALLE ─────────────────────────────────────────────
+  // ══════════════════════════════════════
+  // DETALLE
+  // ══════════════════════════════════════
   if ($accion === 'detalle' && $metodo === 'GET') {
     $id = $_GET['id'] ?? '';
 
-    $stmt = $db->prepare('
+    $stmt = $db->prepare("
       SELECT p.*,
-             COALESCE(os_tip.nombre_opcion, "Sin tipo")    AS tipo_inmueble,
-             COALESCE(os_neg.nombre_opcion, "Sin negocio") AS tipo_negocio,
-             COALESCE(os_est.nombre_opcion, "Sin estado")  AS estado_publicacion,
-             COALESCE(os_est.valor_extra, "#6B7280")       AS estado_color,
-             COALESCE(CONCAT(u.nombre," ",u.apellido), "Sin vendedor") AS vendedor,
-             COALESCE(u.correo, "")   AS correo_vendedor,
-             COALESCE(u.telefono, "") AS telefono_vendedor
-      FROM   propiedades p
-      LEFT JOIN opciones_sistema os_tip ON os_tip.id = p.tipo_inmueble_id
-      LEFT JOIN opciones_sistema os_neg ON os_neg.id = p.tipo_negocio_id
-      LEFT JOIN opciones_sistema os_est ON os_est.id = p.estado_publicacion_id
-      LEFT JOIN usuarios u              ON u.id       = p.vendedor_id
-      WHERE  p.id = :id LIMIT 1
-    ');
+        COALESCE(os_tip.nombre_opcion, '—') AS tipo_inmueble,
+        COALESCE(os_neg.nombre_opcion, '—') AS tipo_negocio,
+        COALESCE(os_est.nombre_opcion, 'Sin estado') AS estado_publicacion,
+        COALESCE(os_est.valor_extra, '#6B7280') AS estado_color,
+        COALESCE(CONCAT(u.nombre,' ',u.apellido), 'Sin vendedor') AS vendedor,
+        COALESCE(u.correo, '') AS correo_vendedor,
+        COALESCE(u.telefono, '') AS telefono_vendedor
+      FROM propiedades p
+      LEFT JOIN opciones_sistema os_tip ON os_tip.id = p.tipo_inmueble_id AND os_tip.categoria = 'tipo_inmueble'
+      LEFT JOIN opciones_sistema os_neg ON os_neg.id = p.tipo_negocio_id  AND os_neg.categoria = 'tipo_negocio'
+      LEFT JOIN opciones_sistema os_est ON os_est.id = p.estado_publicacion_id AND os_est.categoria = 'estado_publicacion'
+      LEFT JOIN usuarios u ON u.id = p.vendedor_id
+      WHERE p.id = :id LIMIT 1
+    ");
     $stmt->execute([':id' => $id]);
-    $propiedad = $stmt->fetch();
+    $prop = $stmt->fetch();
 
-    if (!$propiedad) {
+    if (!$prop) {
       echo json_encode(['ok' => false, 'msg' => 'Propiedad no encontrada.']);
       exit;
     }
 
-    $stmtFotos = $db->prepare('SELECT * FROM fotos_propiedad WHERE propiedad_id = :pid ORDER BY numero_orden ASC');
-    $stmtFotos->execute([':pid' => $id]);
+    $fotos = $db->prepare('SELECT * FROM fotos_propiedad WHERE propiedad_id = :pid ORDER BY numero_orden ASC');
+    $fotos->execute([':pid' => $id]);
 
-    echo json_encode([
-      'ok'        => true,
-      'propiedad' => $propiedad,
-      'fotos'     => $stmtFotos->fetchAll(),
-    ]);
+    echo json_encode(['ok' => true, 'propiedad' => $prop, 'fotos' => $fotos->fetchAll()]);
     exit;
   }
 
-  // ── ESTADOS ─────────────────────────────────────────────
+  // ══════════════════════════════════════
+  // ESTADOS DISPONIBLES
+  // ══════════════════════════════════════
   if ($accion === 'estados' && $metodo === 'GET') {
     $stmt = $db->query("
       SELECT id, nombre_opcion, valor_extra
-      FROM   opciones_sistema
-      WHERE  categoria = 'estado_publicacion' AND disponible = 1
-      ORDER  BY id
+      FROM opciones_sistema
+      WHERE categoria = 'estado_publicacion' AND disponible = 1
+      ORDER BY id
     ");
     echo json_encode(['ok' => true, 'estados' => $stmt->fetchAll()]);
     exit;
   }
 
-  // ── CAMBIAR ESTADO ──────────────────────────────────────
+  // ══════════════════════════════════════
+  // CAMBIAR ESTADO
+  // ══════════════════════════════════════
   if ($accion === 'estado' && $metodo === 'POST') {
-    $id       = $_POST['id']        ?? '';
-    $estadoId = (int) ($_POST['estado_id'] ?? 0);
+    $id  = $_POST['id']       ?? '';
+    $est = (int)($_POST['estado_id'] ?? 0);
 
-    if (!$id || !$estadoId) {
+    if (!$id || !$est) {
       echo json_encode(['ok' => false, 'msg' => 'Datos inválidos.']);
       exit;
     }
 
-    $stmt = $db->prepare('UPDATE propiedades SET estado_publicacion_id = :est WHERE id = :id');
-    $ok   = $stmt->execute([':est' => $estadoId, ':id' => $id]);
+    $ok = $db->prepare('UPDATE propiedades SET estado_publicacion_id = :e WHERE id = :id')
+             ->execute([':e' => $est, ':id' => $id]);
+
     echo json_encode(['ok' => $ok, 'msg' => $ok ? 'Estado actualizado.' : 'Error al actualizar.']);
     exit;
   }
 
-  // ── ELIMINAR ────────────────────────────────────────────
+  // ══════════════════════════════════════
+  // ELIMINAR
+  // ══════════════════════════════════════
   if ($accion === 'eliminar' && $metodo === 'POST') {
     $id = $_POST['id'] ?? '';
+    if (!$id) { echo json_encode(['ok' => false, 'msg' => 'ID inválido.']); exit; }
 
-    if (!$id) {
-      echo json_encode(['ok' => false, 'msg' => 'ID inválido.']);
-      exit;
-    }
-
-    $stmtFotos = $db->prepare('SELECT url_foto_original, url_foto_miniatura FROM fotos_propiedad WHERE propiedad_id = :pid');
-    $stmtFotos->execute([':pid' => $id]);
-    $basePath = $_SERVER['DOCUMENT_ROOT'] . '/Asociaciones_PP/';
-    foreach ($stmtFotos->fetchAll() as $foto) {
-      foreach ([$foto['url_foto_original'], $foto['url_foto_miniatura']] as $ruta) {
-        if ($ruta && file_exists($basePath . ltrim($ruta, '/'))) {
-          @unlink($basePath . ltrim($ruta, '/'));
-        }
+    // Eliminar fotos físicas
+    $fotos = $db->prepare('SELECT url_foto_original, url_foto_miniatura FROM fotos_propiedad WHERE propiedad_id = :pid');
+    $fotos->execute([':pid' => $id]);
+    $base = $_SERVER['DOCUMENT_ROOT'] . '/Asociaciones_PP/';
+    foreach ($fotos->fetchAll() as $f) {
+      foreach ([$f['url_foto_original'], $f['url_foto_miniatura']] as $r) {
+        if ($r && file_exists($base . ltrim($r, '/'))) @unlink($base . ltrim($r, '/'));
       }
     }
 
-    $stmt = $db->prepare('DELETE FROM propiedades WHERE id = :id');
-    $ok   = $stmt->execute([':id' => $id]);
+    $ok = $db->prepare('DELETE FROM propiedades WHERE id = :id')->execute([':id' => $id]);
     echo json_encode(['ok' => $ok, 'msg' => $ok ? 'Propiedad eliminada.' : 'Error al eliminar.']);
     exit;
   }
