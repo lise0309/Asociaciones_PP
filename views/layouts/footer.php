@@ -19,7 +19,7 @@ $base = (strpos($ruta, '/views/') !== false) ? '../' : '';
         <!-- ── BRAND ── -->
         <div class="footer-brand">
           <a href="#" class="footer-logo-link">
-            <img src="<?= $base ?>assets/img/Logo.jpeg" alt="PP Bienes Raíces" class="footer-logo-img">
+            <img src="<?= $base ?>assets/img/logo_PP_negativo.png" alt="PP Bienes Raíces" class="footer-logo-img">
           </a>
           <p class="footer-desc">
             La plataforma inmobiliaria más confiable de El Salvador. Conectamos compradores y vendedores verificados en los 14 departamentos del país.

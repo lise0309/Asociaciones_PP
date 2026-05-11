@@ -60,11 +60,14 @@ if ($rol === 'admin') {
 <aside class="sidebar" id="sidebar">
     
     <!-- ── LOGO ── -->
-    <div class="sidebar-logo">
-        <a href="<?= $rol === 'admin' ? 'dashboardadmin.php' : 'dashboardvendedor.php' ?>">
-            <img src="../assets/img/Logo.jpeg" alt="PP Bienes Raíces" class="sidebar-logo-img">
-        </a>
-    </div>
+    <div class="sidebar-logo" style="display: flex; justify-content: center; padding: 25px 0;">
+    <a href="<?= $rol === 'admin' ? 'dashboardadmin.php' : 'dashboardvendedor.php' ?>">
+        <img src="../assets/img/isotipo_PP_positivo.png" 
+             alt="PP Bienes Raíces" 
+             class="sidebar-logo-img" 
+             style="height: 85px; width: auto; max-width: 90%; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.1));">
+    </a>
+</div>
 
     <!-- ── PERFIL USUARIO ── -->
     <div class="sidebar-perfil">
