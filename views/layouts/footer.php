@@ -4,8 +4,9 @@
  * views/layouts/footer.php
  */
 
-$ruta = $_SERVER['PHP_SELF'];
-$base = (strpos($ruta, '/views/') !== false) ? '../' : '';
+// Detectar la ruta base correcta
+$ruta_actual = $_SERVER['REQUEST_URI'];
+$base_path = '/Asociaciones_PP/'; // Ruta absoluta desde la raíz
 ?>
 
 <footer class="site-footer" id="contacto">
@@ -19,7 +20,8 @@ $base = (strpos($ruta, '/views/') !== false) ? '../' : '';
         <!-- ── BRAND ── -->
         <div class="footer-brand">
           <a href="#" class="footer-logo-link">
-            <img src="<?= $base ?>assets/img/Logo.jpeg" alt="PP Bienes Raíces" class="footer-logo-img">
+            <!-- Usar ruta ABSOLUTA siempre -->
+            <img src="/Asociaciones_PP/assets/img/Logo.jpeg" alt="PP Bienes Raíces" class="footer-logo-img">
           </a>
           <p class="footer-desc">
             La plataforma inmobiliaria más confiable de El Salvador. Conectamos compradores y vendedores verificados en los 14 departamentos del país.
@@ -44,12 +46,12 @@ $base = (strpos($ruta, '/views/') !== false) ? '../' : '';
         <div class="footer-col">
           <h4 class="footer-col-title">Propiedades</h4>
           <ul class="footer-nav">
-            <li><a href="#">Casas en venta</a></li>
-            <li><a href="#">Apartamentos</a></li>
-            <li><a href="#">Terrenos</a></li>
-            <li><a href="#">Fincas y haciendas</a></li>
-            <li><a href="#">Locales comerciales</a></li>
-            <li><a href="#">En alquiler</a></li>
+            <li><a href="/Asociaciones_PP/views/propiedades.php?tipo=casa">Casas en venta</a></li>
+            <li><a href="/Asociaciones_PP/views/propiedades.php?tipo=apartamento">Apartamentos</a></li>
+            <li><a href="/Asociaciones_PP/views/propiedades.php?tipo=terreno">Terrenos</a></li>
+            <li><a href="/Asociaciones_PP/views/propiedades.php?tipo=finca">Fincas y haciendas</a></li>
+            <li><a href="/Asociaciones_PP/views/propiedades.php?tipo=comercial">Locales comerciales</a></li>
+            <li><a href="/Asociaciones_PP/views/propiedades.php?negocio=alquiler">En alquiler</a></li>
           </ul>
         </div>
 
@@ -57,10 +59,10 @@ $base = (strpos($ruta, '/views/') !== false) ? '../' : '';
         <div class="footer-col">
           <h4 class="footer-col-title">Sistema</h4>
           <ul class="footer-nav">
-            <li><a href="#">Iniciar sesión</a></li>
-            <li><a href="#">Mapa interactivo</a></li>
-            <li><a href="#">Ver agentes</a></li>
-            <li><a href="#">Cómo funciona</a></li>
+            <li><a href="/Asociaciones_PP/views/login.php">Iniciar sesión</a></li>
+            <li><a href="/Asociaciones_PP/views/mapa.php">Mapa interactivo</a></li>
+            <li><a href="/Asociaciones_PP/views/agentes.php">Ver agentes</a></li>
+            <li><a href="/Asociaciones_PP/views/como-funciona.php">Cómo funciona</a></li>
           </ul>
         </div>
 
