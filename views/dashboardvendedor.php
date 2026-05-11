@@ -30,6 +30,7 @@ $breadcrumb    = [
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../assets/css/panel.css">
   <link rel="stylesheet" href="../assets/css/footer.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
 
@@ -62,13 +63,11 @@ $breadcrumb    = [
       </div>
 
       <!-- ════ KPIs ════ -->
-      <div class="kpi-grid">
+<div class="kpi-grid">
 
         <div class="kpi-card">
           <div class="kpi-icon kpi-icon-navy">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clip-rule="evenodd"/>
-            </svg>
+            <i class="fas fa-home"></i>
           </div>
           <div class="kpi-data">
             <div class="kpi-label">Mis propiedades</div>
@@ -79,9 +78,7 @@ $breadcrumb    = [
 
         <div class="kpi-card">
           <div class="kpi-icon kpi-icon-green">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/>
-            </svg>
+            <i class="fas fa-check-circle"></i>
           </div>
           <div class="kpi-data">
             <div class="kpi-label">Activas</div>
@@ -92,9 +89,7 @@ $breadcrumb    = [
 
         <div class="kpi-card">
           <div class="kpi-icon kpi-icon-gold">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 2c-2.236 0-4.43.18-6.57.524C1.993 2.755 1 4.014 1 5.426v5.148c0 1.413.993 2.67 2.43 2.902.848.137 1.705.248 2.57.331v3.443a.75.75 0 001.28.53l3.58-3.579a.78.78 0 01.527-.224 41.202 41.202 0 005.183-.5c1.437-.232 2.43-1.49 2.43-2.903V5.426c0-1.413-.993-2.67-2.43-2.902A41.289 41.289 0 0010 2zm0 7a1 1 0 100-2 1 1 0 000 2zM6 9a1 1 0 11-2 0 1 1 0 012 0zm5 1a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
-            </svg>
+            <i class="fas fa-comments"></i>
           </div>
           <div class="kpi-data">
             <div class="kpi-label">Consultas nuevas</div>
@@ -105,14 +100,23 @@ $breadcrumb    = [
 
         <div class="kpi-card">
           <div class="kpi-icon kpi-icon-blue">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
-            </svg>
+            <i class="fas fa-file-contract"></i>
           </div>
           <div class="kpi-data">
             <div class="kpi-label">Contratos activos</div>
             <div class="kpi-valor">2</div>
             <div class="kpi-sub kpi-sub-up">12 firmados este año</div>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-icon-navy">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <div class="kpi-data">
+            <div class="kpi-label">Ventas este mes</div>
+            <div class="kpi-valor">5</div>
+            <div class="kpi-sub kpi-sub-up">↑ +2 vs mes anterior</div>
           </div>
         </div>
 
