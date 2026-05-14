@@ -72,7 +72,7 @@ $breadcrumb    = [
           <div class="kpi-data">
             <div class="kpi-label">Mis propiedades</div>
             <div class="kpi-valor">18</div>
-            <div class="kpi-sub kpi-sub-up">↑ +2 este mes</div>
+           
           </div>
         </div>
 
