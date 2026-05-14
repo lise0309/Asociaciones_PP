@@ -1,184 +1,211 @@
 <?php
+require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../config/database.php';
 
+use PhpOffice\PhpWord\TemplateProcessor;
+
 class ContratoModel {
-    private $conn;
+    private $db;
     
     public function __construct() {
-        global $conn; // Tu conexión existente
-        $this->conn = $conn;
+        $this->db = Database::conectar();
     }
     
-    /**
-     * Obtiene los estados de contrato desde opciones_sistema
-     * @return array Lista de estados con id, nombre, color (hex)
-     */
-    public function getEstadosContrato() {
-        $sql = "SELECT id, nombre_opcion as nombre, valor_extra as color 
-                FROM opciones_sistema 
-                WHERE categoria = 'estado_contrato' AND disponible = 1
-                ORDER BY id";
-        $result = $this->conn->query($sql);
-        $estados = [];
-        while ($row = $result->fetch_assoc()) {
-            $estados[] = $row;
+    private function generarUUID() {
+        return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+        );
+    }
+    
+    private function generarNumeroContrato() {
+        $year = date('Y');
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM contratos WHERE YEAR(fecha_generacion) = ?");
+        $stmt->execute([$year]);
+        $count = $stmt->fetchColumn() + 1;
+        return "CNT-{$year}-" . str_pad($count, 4, '0', STR_PAD_LEFT);
+    }
+    
+    private function getPlantillaPorPropiedad($propiedad_id) {
+        $sql = "SELECT p.tipo_inmueble_id, p.tipo_negocio_id,
+                       ti.nombre_opcion as tipo_inmueble,
+                       tn.nombre_opcion as tipo_negocio
+                FROM propiedades p
+                JOIN opciones_sistema ti ON p.tipo_inmueble_id = ti.id
+                JOIN opciones_sistema tn ON p.tipo_negocio_id = tn.id
+                WHERE p.id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$propiedad_id]);
+        $datos = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$datos) {
+            return 'plantilla_generica.docx';
         }
-        return $estados;
+        
+        $mapa = [
+            'Casa_6' => 'casa_venta.docx',
+            'Casa_7' => 'casa_alquiler.docx',
+            'Apartamento_6' => 'apartamento_venta.docx',
+            'Apartamento_7' => 'apartamento_alquiler.docx',
+            'Terreno_6' => 'terreno_venta.docx',
+            'Local comercial_7' => 'local_alquiler.docx',
+        ];
+        
+        $key = $datos['tipo_inmueble'] . '_' . $datos['tipo_negocio_id'];
+        return $mapa[$key] ?? 'plantilla_generica.docx';
     }
     
-    /**
-     * Obtiene los contratos de un vendedor específico (con datos de propiedad y comprador)
-     * @param string $vendedor_id UUID del vendedor
-     * @return array Contratos enriquecidos
-     */
+    public function crear($datos) {
+        try {
+            $id = $this->generarUUID();
+            $numero_contrato = $this->generarNumeroContrato();
+            
+            $sql = "INSERT INTO contratos (
+                id, propiedad_id, vendedor_id, plantilla_id,
+                nombre_comprador, correo_comprador, dui_comprador,
+                monto_acordado, moneda, tipo_contrato_id, estado_contrato_id,
+                fecha_generacion, numero_contrato
+            ) VALUES (
+                :id, :propiedad_id, :vendedor_id, :plantilla_id,
+                :nombre_comprador, :correo_comprador, :dui_comprador,
+                :monto_acordado, :moneda, :tipo_contrato_id, 17, NOW(), :numero_contrato
+            )";
+            
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                ':id' => $id,
+                ':propiedad_id' => $datos['propiedad_id'],
+                ':vendedor_id' => $datos['vendedor_id'],
+                ':plantilla_id' => null,
+                ':nombre_comprador' => $datos['nombre_comprador'],
+                ':correo_comprador' => $datos['correo_comprador'],
+                ':dui_comprador' => $datos['dui_comprador'],
+                ':monto_acordado' => $datos['monto_acordado'],
+                ':moneda' => $datos['moneda'],
+                ':tipo_contrato_id' => $datos['tipo_contrato_id'] ?? 14,
+                ':numero_contrato' => $numero_contrato
+            ]);
+            
+            return $id;
+        } catch (PDOException $e) {
+            error_log("Error crear contrato: " . $e->getMessage());
+            return false;
+        }
+    }
+    
     public function getContratosByVendedor($vendedor_id) {
-        $sql = "SELECT c.id, c.nombre_comprador, c.correo_comprador, c.monto_acordado, 
-                       c.moneda, c.fecha_generacion, c.estado_contrato_id,
-                       p.titulo_anuncio as propiedad_titulo,
-                       e.nombre_opcion as estado_nombre,
-                       e.valor_extra as estado_color
+        $sql = "SELECT c.*, p.titulo_anuncio, 
+                       e.nombre_opcion as estado_nombre
                 FROM contratos c
-                INNER JOIN propiedades p ON c.propiedad_id = p.id
-                INNER JOIN opciones_sistema e ON c.estado_contrato_id = e.id
+                JOIN propiedades p ON c.propiedad_id = p.id
+                JOIN opciones_sistema e ON c.estado_contrato_id = e.id
                 WHERE c.vendedor_id = ?
                 ORDER BY c.fecha_generacion DESC";
         
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param('s', $vendedor_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        $contratos = [];
-        while ($row = $result->fetch_assoc()) {
-            // Obtener el historial de cambios para este contrato
-            $row['historial'] = $this->getHistorialCambios($row['id']);
-            $contratos[] = $row;
-        }
-        return $contratos;
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$vendedor_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
-    /**
-     * Obtiene el historial de cambios de estado de un contrato
-     * @param string $contrato_id UUID
-     * @return array [ id_estado => fecha ]
-     */
-    private function getHistorialCambios($contrato_id) {
-        $sql = "SELECT h.accion_realizada, h.fecha_accion
-                FROM historial_contrato h
-                WHERE h.contrato_id = ?
-                ORDER BY h.fecha_accion ASC";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param('s', $contrato_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        $fechasPorEstado = [];
-        // Mapear acciones a IDs de estado (según el texto)
-        $mapaAcciones = [
-            'Borrador' => 17,
-            'Enviado' => 18,
-            'Firmado' => 19,
-            'Vencido' => 20,
-            'Anulado' => 21
-        ];
-        
-        while ($row = $result->fetch_assoc()) {
-            $accion = $row['accion_realizada'];
-            // Extraer el nombre del estado (ej: "Cambio de estado a Enviado")
-            if (preg_match('/a (Borrador|Enviado|Firmado|Vencido|Anulado)/', $accion, $matches)) {
-                $nombreEstado = $matches[1];
-                if (isset($mapaAcciones[$nombreEstado])) {
-                    $estadoId = $mapaAcciones[$nombreEstado];
-                    $fechasPorEstado[$estadoId] = date('d/m/Y', strtotime($row['fecha_accion']));
-                }
-            }
-        }
-        
-        // Si no hay historial, al menos la fecha de creación corresponde a "Borrador"
-        return $fechasPorEstado;
-    }
-    
-    /**
-     * Avanza el contrato al siguiente estado (Borrador -> Enviado -> Firmado)
-     * @param string $contrato_id
-     * @param string $comentario Opcional
-     * @param string $quien (nombre o email del vendedor)
-     * @return bool
-     */
-    public function avanzarEstado($contrato_id, $comentario = '', $quien = 'Sistema') {
-        // Obtener estado actual
-        $sql = "SELECT estado_contrato_id FROM contratos WHERE id = ?";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param('s', $contrato_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $actual = $result->fetch_assoc();
-        
-        if (!$actual) return false;
-        
-        $estadoActualId = $actual['estado_contrato_id'];
-        $siguienteId = null;
-        
-        // Definir flujo: 17(Borrador) -> 18(Enviado) -> 19(Firmado)
-        if ($estadoActualId == 17) {
-            $siguienteId = 18;
-        } elseif ($estadoActualId == 18) {
-            $siguienteId = 19;
-        } else {
-            // Ya está Firmado o estado terminal, no avanza
-            return false;
-        }
-        
-        // Obtener nombre del nuevo estado
-        $sqlNombre = "SELECT nombre_opcion FROM opciones_sistema WHERE id = ?";
-        $stmtNom = $this->conn->prepare($sqlNombre);
-        $stmtNom->bind_param('i', $siguienteId);
-        $stmtNom->execute();
-        $nombreEstado = $stmtNom->get_result()->fetch_assoc()['nombre_opcion'];
-        
-        // Iniciar transacción
-        $this->conn->begin_transaction();
-        try {
-            // Actualizar contrato
-            $sqlUpd = "UPDATE contratos SET estado_contrato_id = ? WHERE id = ?";
-            $stmtUpd = $this->conn->prepare($sqlUpd);
-            $stmtUpd->bind_param('is', $siguienteId, $contrato_id);
-            $stmtUpd->execute();
-            
-            // Insertar en historial_contrato
-            $accion = "Cambio de estado a $nombreEstado";
-            if (!empty($comentario)) {
-                $accion .= " - Comentario: $comentario";
-            }
-            $sqlHist = "INSERT INTO historial_contrato (id, contrato_id, accion_realizada, quien_lo_hizo, ip_accion) 
-                        VALUES (UUID(), ?, ?, ?, ?)";
-            $ip = $_SERVER['REMOTE_ADDR'] ?? null;
-            $stmtHist = $this->conn->prepare($sqlHist);
-            $stmtHist->bind_param('ssss', $contrato_id, $accion, $quien, $ip);
-            $stmtHist->execute();
-            
-            $this->conn->commit();
-            return true;
-        } catch (Exception $e) {
-            $this->conn->rollback();
-            error_log("Error al avanzar contrato: " . $e->getMessage());
-            return false;
-        }
-    }
-    
-    /**
-     * Obtiene datos de un contrato específico (para detalles)
-     */
-    public function getContratoById($contrato_id) {
-        $sql = "SELECT c.*, p.titulo_anuncio, u.nombre as vendedor_nombre, u.apellido as vendedor_apellido
+    public function generarDocumento($contrato_id) {
+        // Obtener datos del contrato
+        $sql = "SELECT c.*, p.titulo_anuncio, p.direccion_exacta, p.municipio, p.departamento,
+                       p.num_habitaciones, p.num_banos, p.metros_construccion, p.metros_terreno,
+                       p.tiene_estacionamiento, p.tiene_piscina, p.viene_amueblado,
+                       u.nombre as vendedor_nombre, u.apellido as vendedor_apellido,
+                       u.correo as vendedor_correo, u.telefono as vendedor_telefono
                 FROM contratos c
                 JOIN propiedades p ON c.propiedad_id = p.id
                 JOIN usuarios u ON c.vendedor_id = u.id
                 WHERE c.id = ?";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param('s', $contrato_id);
-        $stmt->execute();
-        return $stmt->get_result()->fetch_assoc();
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$contrato_id]);
+        $c = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$c) {
+            return ['success' => false, 'error' => 'Contrato no encontrado'];
+        }
+        
+        $plantilla = $this->getPlantillaPorPropiedad($c['propiedad_id']);
+        $templatePath = __DIR__ . '/../plantillas/' . $plantilla;
+        
+        if (!file_exists($templatePath)) {
+            return ['success' => false, 'error' => 'Plantilla no encontrada'];
+        }
+        
+        try {
+            $templateProcessor = new TemplateProcessor($templatePath);
+            
+            $data = [
+                'ciudad' => 'San Salvador',
+                'dia' => date('d'),
+                'mes' => $this->getMesTexto(date('m')),
+                'año' => date('Y'),
+                'vendedor_nombre' => $c['vendedor_nombre'] . ' ' . $c['vendedor_apellido'],
+                'comprador_nombre' => $c['nombre_comprador'],
+                'comprador_dui' => $c['dui_comprador'],
+                'propiedad_direccion' => $c['direccion_exacta'],
+                'propiedad_municipio' => $c['municipio'],
+                'propiedad_departamento' => $c['departamento'],
+                'metros_terreno' => number_format($c['metros_terreno'] ?? 0, 2),
+                'metros_construccion' => number_format($c['metros_construccion'] ?? 0, 2),
+                'num_habitaciones' => $c['num_habitaciones'] ?? 0,
+                'num_banos' => $c['num_banos'] ?? 0,
+                'tiene_estacionamiento' => ($c['tiene_estacionamiento'] ?? 0) ? 'Sí' : 'No',
+                'precio' => number_format($c['monto_acordado'], 2),
+                'moneda' => $c['moneda']
+            ];
+            
+            foreach ($data as $key => $value) {
+                $templateProcessor->setValue($key, $value);
+                $templateProcessor->setValue('${' . $key . '}', $value);
+            }
+            
+            $dir = __DIR__ . '/../contratos_generados';
+            if (!file_exists($dir)) mkdir($dir, 0777, true);
+            
+            $filename = 'contrato_' . ($c['numero_contrato'] ?? date('Ymd_His')) . '.docx';
+            $wordPath = $dir . '/' . $filename;
+            $templateProcessor->saveAs($wordPath);
+            
+            return ['success' => true, 'ruta' => $wordPath, 'nombre' => $filename];
+            
+        } catch (Exception $e) {
+            error_log("Error al generar Word: " . $e->getMessage());
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+    
+    private function getMesTexto($mes) {
+        $meses = [
+            '01' => 'enero', '02' => 'febrero', '03' => 'marzo', '04' => 'abril',
+            '05' => 'mayo', '06' => 'junio', '07' => 'julio', '08' => 'agosto',
+            '09' => 'septiembre', '10' => 'octubre', '11' => 'noviembre', '12' => 'diciembre'
+        ];
+        return $meses[$mes] ?? 'enero';
+    }
+    
+    public function eliminarContrato($contrato_id, $vendedor_id) {
+        $check = $this->db->prepare("SELECT estado_contrato_id FROM contratos WHERE id = ? AND vendedor_id = ?");
+        $check->execute([$contrato_id, $vendedor_id]);
+        $estado = $check->fetchColumn();
+        
+        if (!$estado) {
+            return ['success' => false, 'error' => 'Contrato no encontrado'];
+        }
+        
+        if ($estado == 17) {
+            $delete = $this->db->prepare("DELETE FROM contratos WHERE id = ?");
+            $delete->execute([$contrato_id]);
+            return ['success' => true, 'message' => 'Contrato eliminado'];
+        } else {
+            $update = $this->db->prepare("UPDATE contratos SET estado_contrato_id = 21 WHERE id = ?");
+            $update->execute([$contrato_id]);
+            return ['success' => true, 'message' => 'Contrato anulado'];
+        }
     }
 }
 ?>

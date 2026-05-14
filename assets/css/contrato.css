@@ -1,0 +1,302 @@
+/* ============================================
+   CONTRATOS - PP Bienes Raíces
+   Estilo profesional
+   ============================================ */
+
+/* Contenedor principal */
+.contrato-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Layout de dos columnas */
+.contrato-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 28px;
+}
+
+@media (max-width: 1024px) {
+    .contrato-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================
+   FORMULARIO - Estilo moderno
+   ============================================ */
+.contrato-form {
+    background: var(--white);
+    border-radius: var(--r-lg);
+    box-shadow: var(--sh-md);
+    overflow: hidden;
+}
+
+.contrato-form .card-header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    padding: 18px 24px;
+    border-bottom: none;
+}
+
+.contrato-form .card-header h3 {
+    color: var(--gold);
+    font-size: 1.2rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.contrato-form .card-body {
+    padding: 24px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--navy);
+    margin-bottom: 8px;
+}
+
+.form-group label .required {
+    color: var(--gold-dark);
+    margin-left: 4px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--r-md);
+    font-family: var(--font-b);
+    font-size: 0.875rem;
+    transition: all var(--t);
+    background: var(--white);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px var(--gold-soft);
+}
+
+.form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+/* Botón principal */
+.btn-panel-primary {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    color: var(--gold);
+    border: none;
+    padding: 12px 24px;
+    border-radius: var(--r-md);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--t);
+    width: 100%;
+}
+
+.btn-panel-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(26, 25, 83, 0.3);
+    color: var(--white);
+}
+
+/* ============================================
+   LISTADO DE CONTRATOS - Tarjetas modernas
+   ============================================ */
+.contrato-list {
+    background: var(--white);
+    border-radius: var(--r-lg);
+    box-shadow: var(--sh-md);
+    overflow: hidden;
+}
+
+.contrato-list .card-header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    padding: 18px 24px;
+}
+
+.contrato-list .card-header h3 {
+    color: var(--gold);
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+#refreshContratos {
+    background: rgba(255, 212, 90, 0.2);
+    color: var(--gold);
+    border: 1px solid var(--gold);
+}
+
+#refreshContratos:hover {
+    background: var(--gold);
+    color: var(--navy);
+}
+
+.contratos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.contrato-item {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px;
+    transition: all var(--t);
+    cursor: pointer;
+}
+
+.contrato-item:hover {
+    background: var(--navy-soft);
+    transform: translateX(4px);
+}
+
+.contrato-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.contrato-numero {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--navy);
+    background: var(--navy-soft);
+    padding: 4px 12px;
+    border-radius: var(--r-full);
+    font-family: monospace;
+}
+
+.contrato-estado {
+    font-size: 0.7rem;
+    padding: 4px 12px;
+    border-radius: var(--r-full);
+    font-weight: 600;
+}
+
+.estado-borrador {
+    background: var(--navy-soft);
+    color: var(--navy);
+}
+
+.estado-enviado {
+    background: var(--gold-soft);
+    color: var(--gold-dark);
+}
+
+.estado-firmado {
+    background: var(--navy);
+    color: var(--gold);
+}
+
+.contrato-detalle {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+
+.contrato-detalle strong {
+    color: var(--navy);
+    font-size: 1rem;
+}
+
+.contrato-detalle br {
+    margin: 4px 0;
+}
+
+.contrato-acciones {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.contrato-acciones .btn-sm {
+    padding: 6px 16px;
+    font-size: 0.75rem;
+}
+
+/* Alertas */
+.alert {
+    padding: 16px 20px;
+    border-radius: var(--r-md);
+    margin-bottom: 24px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    color: #065f46;
+    border-left: 4px solid #10b981;
+}
+
+.alert-error {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, var(--gold-soft), rgba(255, 212, 90, 0.2));
+    color: var(--navy);
+    border-left: 4px solid var(--gold-dark);
+}
+
+.alert a {
+    color: var(--navy);
+    font-weight: 700;
+    text-decoration: underline;
+}
+
+.loading {
+    text-align: center;
+    padding: 60px;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+    .form-row-2 {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .contrato-item {
+        padding: 16px;
+    }
+    
+    .contrato-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .contrato-acciones {
+        flex-wrap: wrap;
+    }
+}

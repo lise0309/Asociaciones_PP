@@ -38,7 +38,7 @@
   let isLoading      = false;
 
   // URL del controlador
-  const PROP_URL = 'controllers/PropiedadController.php';
+  const PROP_URL = 'controllers/propiedadindexcontroller.php';
 
   /* ══════════════════════════════════════
      CREAR OVERLAY DE CARGA
