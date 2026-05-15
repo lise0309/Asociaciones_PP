@@ -125,8 +125,23 @@
         </div>
       </div>
 
-      <!-- SOLO BOTÓN LIMPIAR (sin botón buscar) -->
+      <!-- Moneda -->
+      <div class="filtro-grupo">
+        <label class="filtro-label">Moneda</label>
+        <div class="filtro-pills" id="filtroMoneda">
+          <button class="pill active" data-val="usd">USD</button>
+          <button class="pill" data-val="eur">€ EUR</button>
+          <button class="pill" data-val="btc">₿ BTC</button>
+        </div>
+      </div>
+
       <div class="filtro-actions">
+        <button class="btn-buscar" id="btnBuscar">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"/>
+          </svg>
+          Buscar propiedades
+        </button>
         <button class="btn-limpiar" id="btnLimpiar">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4z" clip-rule="evenodd"/>
@@ -164,15 +179,15 @@
             </p>
             <div class="hero-stats">
               <div class="hero-stat">
-                <span class="stat-num" data-count="0">0</span>
+                <span class="stat-num" data-count="868">0</span>
                 <span class="stat-lbl">Propiedades activas</span>
               </div>
               <div class="hero-stat">
-                <span class="stat-num" data-count="0">0</span>
+                <span class="stat-num" data-count="14">0</span>
                 <span class="stat-lbl">Departamentos</span>
               </div>
               <div class="hero-stat">
-                <span class="stat-num" data-count="0">0</span>
+                <span class="stat-num" data-count="120">0</span>
                 <span class="stat-lbl">Agentes expertos</span>
               </div>
               <div class="hero-stat">
@@ -211,7 +226,7 @@
       <div class="resultados-bar">
         <div class="resultados-left">
           <span class="resultados-count">
-            <strong id="totalCount">0</strong> propiedades encontradas
+            <strong id="totalCount">868</strong> propiedades encontradas
           </span>
           <!-- Botón filtros solo en móvil -->
           <button class="btn-filtros-mobile" id="btnFiltrosMobile">
@@ -232,10 +247,8 @@
         </div>
       </div>
 
-      <!-- GRID PROPIEDADES -->
-      <div class="props-grid" id="propsGrid">
-        <!-- Las propiedades se cargan aquí vía JS -->
-      </div>
+      <!-- GRID PROPIEDADES — se llena desde BD via JS -->
+      <div class="props-grid" id="propsGrid"></div>
 
       <!-- PAGINACIÓN -->
       <div class="paginacion" id="paginacion">
@@ -250,9 +263,8 @@
 
   <?php include 'views/layouts/footer.php'; ?>
 
-  <!-- URLs para JS -->
   <script>
-    const PROP_URL = 'controllers/PropiedadController.php';
+    const PROP_URL = 'controllers/propiedadindexcontroller.php';
   </script>
   <script src="assets/js/index.js"></script>
 
