@@ -1,62 +1,48 @@
 <?php
 session_start();
 require_once __DIR__ . '/../models/ContratoModel.php';
+require_once __DIR__ . '/../config/database.php';
 
 header('Content-Type: application/json');
 
-// Verificar sesión
 if (!isset($_SESSION['usuario_id'])) {
     echo json_encode(['success' => false, 'error' => 'No autorizado']);
     exit;
 }
 
 $model = new ContratoModel();
+$db = Database::conectar();  // ← IMPORTANTE: Obtener conexión a la BD
+$action = $_GET['action'] ?? '';
 
-// OBTENER LA ACCIÓN (de GET o POST)
-$action = isset($_GET['action']) ? $_GET['action'] : (isset($_POST['action']) ? $_POST['action'] : '');
-
-// Si viene por la URL tipo /api/contrato_api.php/listar
-if (empty($action) && isset($_SERVER['PATH_INFO'])) {
-    $action = trim($_SERVER['PATH_INFO'], '/');
-}
-
-// ============================================
-// ACCIÓN: listar
-// ============================================
+// Listar contratos
 if ($action === 'listar') {
     $contratos = $model->getContratosByVendedor($_SESSION['usuario_id']);
-    echo json_encode([
-        'success' => true,
-        'contratos' => $contratos
-    ]);
+    echo json_encode(['success' => true, 'contratos' => $contratos]);
     exit;
 }
 
-// ============================================
-// ACCIÓN: generar
-// ============================================
-if ($action === 'generar') {
-    $id = isset($_GET['id']) ? $_GET['id'] : (isset($_POST['id']) ? $_POST['id'] : '');
-    if (empty($id)) {
-        echo json_encode(['success' => false, 'error' => 'ID de contrato requerido']);
-        exit;
-    }
-    $resultado = $model->generarDocumento($id);
+// Generar documento
+if ($action === 'generar' && isset($_GET['id'])) {
+    $resultado = $model->generarDocumento($_GET['id']);
     echo json_encode($resultado);
     exit;
 }
 
 // ============================================
-// Si no hay acción o no es válida
+// OBTENER HISTORIAL DEL CONTRATO
 // ============================================
-echo json_encode([
-    'success' => false, 
-    'error' => 'Acción no válida',
-    'action_recibida' => $action,
-    'get' => $_GET,
-    'server' => [
-        'request_uri' => $_SERVER['REQUEST_URI'],
-        'path_info' => $_SERVER['PATH_INFO'] ?? 'no'
-    ]
-]);
+if ($action === 'historial' && isset($_GET['id'])) {
+    try {
+        $sql = "SELECT * FROM historial_contrato WHERE contrato_id = ? ORDER BY fecha_accion DESC";
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$_GET['id']]);
+        $historial = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode(['success' => true, 'historial' => $historial]);
+    } catch (PDOException $e) {
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    }
+    exit;
+}
+
+echo json_encode(['success' => false, 'error' => 'Acción no válida']);
 ?>

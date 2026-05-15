@@ -4,7 +4,6 @@
    ============================================================ */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 :root {
-<<<<<<< HEAD
   --navy:       #1A1953;
   --navy-dark:  #0F0F2E;
   --navy-mid:   #252477;
@@ -29,27 +28,6 @@
   --sh-sm:      0 1px 4px rgba(26,25,83,.08);
   --sh-md:      0 4px 16px rgba(26,25,83,.12);
   --sh-lg:      0 8px 32px rgba(26,25,83,.16);
-=======
-  --navy:      #1A1953;
-  --navy-dark: #0F0F2E;
-  --navy-mid:  #252477;
-  --navy-soft: rgba(26,25,83,.06);
-  --gold:      #FFD45A;
-  --gold-dark: #E6B800;
-  --gold-soft: rgba(255,212,90,.12);
-  --gold-mid:  rgba(255,212,90,.22);
-  --white:     #FFFCFB;
-  --off:       #F5F4F1;
-  --bg:        #F0EFEc;
-  --text:      #1C1C2E;
-  --muted:     #6B7280;
-  --border:    #E5E7EB;
-  --sidebar-w: 260px;
-  --header-h:  68px;
-  --sh-sm:     0 1px 4px rgba(26,25,83,.08);
-  --sh-md:     0 4px 16px rgba(26,25,83,.12);
-  --sh-lg:     0 8px 32px rgba(26,25,83,.16);
->>>>>>> fe350bb3d3ab09ae430062653e240b5140303ae7
   --r-sm: 8px; --r-md: 12px; --r-lg: 18px; --r-xl: 24px; --r-full: 9999px;
   --font-d: 'Playfair Display', serif;
   --font-b: 'Inter', sans-serif;
@@ -66,7 +44,6 @@ img { max-width: 100%; height: auto; display: block; }
 /* ════════════════════════════════════════
    LAYOUT
 ════════════════════════════════════════ */
-<<<<<<< HEAD
 .panel-layout {
   display: flex;
   min-height: 100vh;
@@ -85,11 +62,6 @@ img { max-width: 100%; height: auto; display: block; }
   flex: 1;
   padding: 16px;
 }
-=======
-.panel-layout { display: flex; min-height: 100vh; }
-.panel-main { flex: 1; margin-left: var(--sidebar-w); display: flex; flex-direction: column; min-height: 100vh; transition: margin-left var(--t); }
-.panel-content { flex: 1; padding: 28px 32px; }
->>>>>>> fe350bb3d3ab09ae430062653e240b5140303ae7
 
 /* ════════════════════════════════════════
    SIDEBAR
@@ -218,7 +190,6 @@ img { max-width: 100%; height: auto; display: block; }
 /* ════════════════════════════════════════
    KPI GRID
 ════════════════════════════════════════ */
-<<<<<<< HEAD
 
 /* Tarjetas KPI */
 .kpi-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; margin-bottom: 28px; }
@@ -244,33 +215,6 @@ img { max-width: 100%; height: auto; display: block; }
 .kpi-sub   { font-size: .76rem; margin-top: 4px; }
 .kpi-sub-up   { color: var(--green); }
 .kpi-sub-down { color: var(--red); }
-=======
-.kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; margin-bottom: 28px; }
-.kpi-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 22px 24px; display: flex; align-items: flex-start; gap: 16px; transition: all var(--t); box-shadow: var(--sh-sm); position: relative; overflow: hidden; }
-.kpi-card:hover { box-shadow: var(--sh-md); transform: translateY(-2px); }
-.kpi-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 0 2px 2px 0; background: var(--border); transition: background var(--t); }
-.kpi-card:hover::before { background: var(--navy); }
-
-.kpi-icon { width: 46px; height: 46px; border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.kpi-icon svg { width: 22px; height: 22px; }
-
-/* Íconos KPI — SOLO AZUL Y BLANCO (sin dorado) */
-/* Íconos KPI — Todos con el mismo azul claro (navy-mid) y texto blanco */
-.kpi-icon-navy,
-.kpi-icon-gold,
-.kpi-icon-green,
-.kpi-icon-blue,
-.kpi-icon-orange {
-    background: var(--navy-mid);
-    color: var(--white);
-}
-.kpi-data { flex: 1; }
-.kpi-label { font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
-.kpi-valor { font-family: var(--font-d); font-size: 1.8rem; font-weight: 700; color: var(--navy); line-height: 1; }
-.kpi-sub { font-size: .76rem; margin-top: 4px; color: var(--muted); }
-.kpi-sub-up   { color: var(--navy); font-weight: 600; }
-.kpi-sub-down { color: var(--navy-mid); font-weight: 600; }
->>>>>>> fe350bb3d3ab09ae430062653e240b5140303ae7
 
 /* ════════════════════════════════════════
    CARD SECCIÓN
