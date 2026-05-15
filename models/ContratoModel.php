@@ -1,8 +1,5 @@
 <?php
-require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../config/database.php';
-
-use PhpOffice\PhpWord\TemplateProcessor;
 
 class ContratoModel {
     private $db;
@@ -58,43 +55,77 @@ class ContratoModel {
         return $mapa[$key] ?? 'plantilla_generica.docx';
     }
     
-    public function crear($datos) {
+    // Registrar acción en el historial
+    private function registrarHistorial($contrato_id, $accion, $quien) {
         try {
             $id = $this->generarUUID();
-            $numero_contrato = $this->generarNumeroContrato();
+            $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
             
-            $sql = "INSERT INTO contratos (
-                id, propiedad_id, vendedor_id, plantilla_id,
-                nombre_comprador, correo_comprador, dui_comprador,
-                monto_acordado, moneda, tipo_contrato_id, estado_contrato_id,
-                fecha_generacion, numero_contrato
-            ) VALUES (
-                :id, :propiedad_id, :vendedor_id, :plantilla_id,
-                :nombre_comprador, :correo_comprador, :dui_comprador,
-                :monto_acordado, :moneda, :tipo_contrato_id, 17, NOW(), :numero_contrato
-            )";
+            $sql = "INSERT INTO historial_contrato (id, contrato_id, accion_realizada, quien_lo_hizo, ip_accion, fecha_accion) 
+                    VALUES (:id, :contrato_id, :accion, :quien, :ip, NOW())";
             
             $stmt = $this->db->prepare($sql);
             $stmt->execute([
                 ':id' => $id,
-                ':propiedad_id' => $datos['propiedad_id'],
-                ':vendedor_id' => $datos['vendedor_id'],
-                ':plantilla_id' => null,
-                ':nombre_comprador' => $datos['nombre_comprador'],
-                ':correo_comprador' => $datos['correo_comprador'],
-                ':dui_comprador' => $datos['dui_comprador'],
-                ':monto_acordado' => $datos['monto_acordado'],
-                ':moneda' => $datos['moneda'],
-                ':tipo_contrato_id' => $datos['tipo_contrato_id'] ?? 14,
-                ':numero_contrato' => $numero_contrato
+                ':contrato_id' => $contrato_id,
+                ':accion' => $accion,
+                ':quien' => $quien,
+                ':ip' => $ip
             ]);
             
-            return $id;
+            return true;
         } catch (PDOException $e) {
-            error_log("Error crear contrato: " . $e->getMessage());
+            error_log("Error registrar historial: " . $e->getMessage());
             return false;
         }
     }
+    
+    public function crear($datos) {
+    try {
+        $id = $this->generarUUID();
+        $numero_contrato = $this->generarNumeroContrato();
+        
+        $sql = "INSERT INTO contratos (
+            id, numero_contrato, propiedad_id, vendedor_id, plantilla_id,
+            nombre_comprador, correo_comprador, dui_comprador,
+            monto_acordado, moneda, tipo_contrato_id, estado_contrato_id,
+            fecha_generacion
+        ) VALUES (
+            :id, :numero_contrato, :propiedad_id, :vendedor_id, :plantilla_id,
+            :nombre_comprador, :correo_comprador, :dui_comprador,
+            :monto_acordado, :moneda, :tipo_contrato_id, 17, NOW()
+        )";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            ':id' => $id,
+            ':numero_contrato' => $numero_contrato,
+            ':propiedad_id' => $datos['propiedad_id'],
+            ':vendedor_id' => $datos['vendedor_id'],
+            ':plantilla_id' => null,
+            ':nombre_comprador' => $datos['nombre_comprador'],
+            ':correo_comprador' => $datos['correo_comprador'],
+            ':dui_comprador' => $datos['dui_comprador'],
+            ':monto_acordado' => $datos['monto_acordado'],
+            ':moneda' => $datos['moneda'],
+            ':tipo_contrato_id' => $datos['tipo_contrato_id'] ?? 14
+        ]);
+        
+        // Obtener nombre del vendedor para el historial
+        $stmt = $this->db->prepare("SELECT nombre, apellido FROM usuarios WHERE id = ?");
+        $stmt->execute([$datos['vendedor_id']]);
+        $vendedor = $stmt->fetch(PDO::FETCH_ASSOC);
+        $nombreVendedor = ($vendedor['nombre'] ?? '') . ' ' . ($vendedor['apellido'] ?? '');
+        
+        // Registrar historial
+        $this->registrarHistorial($id, "Contrato creado en estado Borrador", $nombreVendedor);
+        
+        return $id;
+    } catch (PDOException $e) {
+        error_log("Error crear contrato: " . $e->getMessage());
+        return false;
+    }
+}
     
     public function getContratosByVendedor($vendedor_id) {
         $sql = "SELECT c.*, p.titulo_anuncio, 
@@ -110,6 +141,9 @@ class ContratoModel {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
+    /**
+     * Genera documento Word usando ZipArchive
+     */
     public function generarDocumento($contrato_id) {
         // Obtener datos del contrato
         $sql = "SELECT c.*, p.titulo_anuncio, p.direccion_exacta, p.municipio, p.departamento,
@@ -129,54 +163,98 @@ class ContratoModel {
             return ['success' => false, 'error' => 'Contrato no encontrado'];
         }
         
+        // Determinar qué plantilla usar
         $plantilla = $this->getPlantillaPorPropiedad($c['propiedad_id']);
         $templatePath = __DIR__ . '/../plantillas/' . $plantilla;
         
         if (!file_exists($templatePath)) {
-            return ['success' => false, 'error' => 'Plantilla no encontrada'];
+            return ['success' => false, 'error' => 'Plantilla no encontrada: ' . $plantilla];
         }
         
-        try {
-            $templateProcessor = new TemplateProcessor($templatePath);
+        // Crear carpeta temporal
+        $temp_dir = __DIR__ . '/../contratos_generados/temp_' . uniqid();
+        if (!file_exists($temp_dir)) mkdir($temp_dir, 0777, true);
+        
+        // Copiar plantilla a directorio temporal
+        $temp_docx = $temp_dir . '/template.docx';
+        copy($templatePath, $temp_docx);
+        
+        // Extraer el ZIP
+        $zip = new ZipArchive;
+        if ($zip->open($temp_docx) === TRUE) {
+            // Extraer document.xml
+            $xml_content = $zip->getFromName('word/document.xml');
             
-            $data = [
-                'ciudad' => 'San Salvador',
-                'dia' => date('d'),
-                'mes' => $this->getMesTexto(date('m')),
-                'año' => date('Y'),
-                'vendedor_nombre' => $c['vendedor_nombre'] . ' ' . $c['vendedor_apellido'],
-                'comprador_nombre' => $c['nombre_comprador'],
-                'comprador_dui' => $c['dui_comprador'],
-                'propiedad_direccion' => $c['direccion_exacta'],
-                'propiedad_municipio' => $c['municipio'],
-                'propiedad_departamento' => $c['departamento'],
-                'metros_terreno' => number_format($c['metros_terreno'] ?? 0, 2),
-                'metros_construccion' => number_format($c['metros_construccion'] ?? 0, 2),
-                'num_habitaciones' => $c['num_habitaciones'] ?? 0,
-                'num_banos' => $c['num_banos'] ?? 0,
-                'tiene_estacionamiento' => ($c['tiene_estacionamiento'] ?? 0) ? 'Sí' : 'No',
-                'precio' => number_format($c['monto_acordado'], 2),
-                'moneda' => $c['moneda']
-            ];
-            
-            foreach ($data as $key => $value) {
-                $templateProcessor->setValue($key, $value);
-                $templateProcessor->setValue('${' . $key . '}', $value);
+            if ($xml_content === false) {
+                $zip->close();
+                $this->deleteDirectory($temp_dir);
+                return ['success' => false, 'error' => 'No se pudo leer document.xml'];
             }
             
+            // Preparar datos para reemplazar
+            $data = [
+                '#CIUDAD#' => 'San Salvador',
+                '#DIA#' => date('d'),
+                '#MES#' => $this->getMesTexto(date('m')),
+                '#AÑO#' => date('Y'),
+                '#VENDEDOR_NOMBRE#' => $c['vendedor_nombre'] . ' ' . $c['vendedor_apellido'],
+                '#VENDEDOR_CORREO#' => $c['vendedor_correo'] ?? '',
+                '#VENDEDOR_TELEFONO#' => $c['vendedor_telefono'] ?? '',
+                '#COMPRADOR_NOMBRE#' => $c['nombre_comprador'],
+                '#COMPRADOR_DUI#' => $c['dui_comprador'],
+                '#COMPRADOR_CORREO#' => $c['correo_comprador'],
+                '#PROPIEDAD_TITULO#' => $c['titulo_anuncio'],
+                '#PROPIEDAD_DIRECCION#' => $c['direccion_exacta'],
+                '#PROPIEDAD_MUNICIPIO#' => $c['municipio'],
+                '#PROPIEDAD_DEPARTAMENTO#' => $c['departamento'],
+                '#METROS_TERRENO#' => number_format($c['metros_terreno'] ?? 0, 2),
+                '#METROS_CONSTRUCCION#' => number_format($c['metros_construccion'] ?? 0, 2),
+                '#NUM_HABITACIONES#' => $c['num_habitaciones'] ?? 0,
+                '#NUM_BANOS#' => $c['num_banos'] ?? 0,
+                '#TIENE_ESTACIONAMIENTO#' => ($c['tiene_estacionamiento'] ?? 0) ? 'Sí' : 'No',
+                '#PRECIO#' => number_format($c['monto_acordado'], 2),
+                '#MONEDA#' => $c['moneda']
+            ];
+            
+            // Reemplazar marcadores
+            foreach ($data as $key => $value) {
+                $xml_content = str_replace($key, htmlspecialchars($value), $xml_content);
+            }
+            
+            // Reemplazar en el archivo ZIP
+            $zip->deleteName('word/document.xml');
+            $zip->addFromString('word/document.xml', $xml_content);
+            $zip->close();
+            
+            // Copiar el archivo generado a la carpeta final
             $dir = __DIR__ . '/../contratos_generados';
             if (!file_exists($dir)) mkdir($dir, 0777, true);
             
             $filename = 'contrato_' . ($c['numero_contrato'] ?? date('Ymd_His')) . '.docx';
-            $wordPath = $dir . '/' . $filename;
-            $templateProcessor->saveAs($wordPath);
+            $finalPath = $dir . '/' . $filename;
+            copy($temp_docx, $finalPath);
             
-            return ['success' => true, 'ruta' => $wordPath, 'nombre' => $filename];
+            // Registrar en historial
+            $this->registrarHistorial($contrato_id, "Documento Word generado", $c['vendedor_nombre'] . ' ' . $c['vendedor_apellido']);
             
-        } catch (Exception $e) {
-            error_log("Error al generar Word: " . $e->getMessage());
-            return ['success' => false, 'error' => $e->getMessage()];
+            // Limpiar archivos temporales
+            $this->deleteDirectory($temp_dir);
+            
+            return ['success' => true, 'ruta' => $finalPath, 'nombre' => $filename];
+        } else {
+            $this->deleteDirectory($temp_dir);
+            return ['success' => false, 'error' => 'No se pudo abrir la plantilla'];
         }
+    }
+    
+    private function deleteDirectory($dir) {
+        if (!file_exists($dir)) return;
+        $files = array_diff(scandir($dir), ['.', '..']);
+        foreach ($files as $file) {
+            $path = $dir . '/' . $file;
+            is_dir($path) ? $this->deleteDirectory($path) : unlink($path);
+        }
+        rmdir($dir);
     }
     
     private function getMesTexto($mes) {
@@ -188,24 +266,28 @@ class ContratoModel {
         return $meses[$mes] ?? 'enero';
     }
     
-    public function eliminarContrato($contrato_id, $vendedor_id) {
-        $check = $this->db->prepare("SELECT estado_contrato_id FROM contratos WHERE id = ? AND vendedor_id = ?");
-        $check->execute([$contrato_id, $vendedor_id]);
-        $estado = $check->fetchColumn();
-        
-        if (!$estado) {
-            return ['success' => false, 'error' => 'Contrato no encontrado'];
-        }
-        
-        if ($estado == 17) {
-            $delete = $this->db->prepare("DELETE FROM contratos WHERE id = ?");
-            $delete->execute([$contrato_id]);
-            return ['success' => true, 'message' => 'Contrato eliminado'];
-        } else {
-            $update = $this->db->prepare("UPDATE contratos SET estado_contrato_id = 21 WHERE id = ?");
-            $update->execute([$contrato_id]);
-            return ['success' => true, 'message' => 'Contrato anulado'];
-        }
+  public function eliminarContrato($contrato_id, $vendedor_id) {
+    $check = $this->db->prepare("SELECT estado_contrato_id, vendedor_id FROM contratos WHERE id = ? AND vendedor_id = ?");
+    $check->execute([$contrato_id, $vendedor_id]);
+    $contrato = $check->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$contrato) {
+        return ['success' => false, 'error' => 'Contrato no encontrado'];
+    }
+    
+    // Obtener el nombre del vendedor para el historial
+    $stmt = $this->db->prepare("SELECT nombre, apellido FROM usuarios WHERE id = ?");
+    $stmt->execute([$vendedor_id]);
+    $vendedor = $stmt->fetch(PDO::FETCH_ASSOC);
+    $nombreVendedor = ($vendedor['nombre'] ?? '') . ' ' . ($vendedor['apellido'] ?? '');
+    
+    // SIEMPRE anular (estado 21), nunca eliminar
+    $this->registrarHistorial($contrato_id, "Contrato anulado", $nombreVendedor);
+    $update = $this->db->prepare("UPDATE contratos SET estado_contrato_id = 21 WHERE id = ?");
+    $update->execute([$contrato_id]);
+    
+    return ['success' => true, 'message' => 'Contrato anulado'];
     }
 }
+
 ?>
