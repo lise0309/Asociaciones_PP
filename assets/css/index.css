@@ -348,11 +348,11 @@ ul  { list-style: none; }
 /* ── GRID PROPIEDADES ── */
 .props-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 22px; padding: 28px 36px 36px; flex: 1;
 }
 .prop-card {
-  background: var(--white); border-radius: var(--r-lg);
+  background: var(--white); border-radius: 0;
   overflow: hidden; transition: all var(--t);
   position: relative; box-shadow: var(--shadow-sm);
   border: 1.5px solid transparent;

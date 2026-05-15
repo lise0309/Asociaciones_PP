@@ -20,12 +20,8 @@ $base_path = '/Asociaciones_PP/'; // Ruta absoluta desde la raíz
         <!-- ── BRAND ── -->
         <div class="footer-brand">
           <a href="#" class="footer-logo-link">
-<<<<<<< HEAD
             <!-- Usar ruta ABSOLUTA siempre -->
             <img src="/Asociaciones_PP/assets/img/Logo.jpeg" alt="PP Bienes Raíces" class="footer-logo-img">
-=======
-            <img src="<?= $base ?>assets/img/logo_PP_negativo.png" alt="PP Bienes Raíces" class="footer-logo-img">
->>>>>>> origin/BackEnd1
           </a>
           <p class="footer-desc">
             La plataforma inmobiliaria más confiable de El Salvador. Conectamos compradores y vendedores verificados en los 14 departamentos del país.
