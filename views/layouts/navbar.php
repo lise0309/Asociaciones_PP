@@ -12,7 +12,7 @@
     <!-- Logo más grande y premium -->
     <a href="index.php" class="nav-logo">
       <div class="nav-logo-premium">
-        <img src="assets/img/logo.jpeg" alt="PP Bienes Raíces" class="nav-logo-img">
+        <img src="assets/img/isotipo_PP_positivo.png" alt="PP Bienes Raíces" class="nav-logo-img">
         <div class="nav-logo-glow"></div>
       </div>
       <div class="nav-logo-text">

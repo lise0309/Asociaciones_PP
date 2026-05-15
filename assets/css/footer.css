@@ -84,13 +84,18 @@
 /* ════════════════════════════════════════
    BRAND
 ════════════════════════════════════════ */
-.footer-logo-link { display: inline-block; margin-bottom: 18px; transition: opacity var(--t); }
-.footer-logo-link:hover { opacity: .85; }
 .footer-logo-img {
-  height: 76px; width: auto; object-fit: contain;
-  filter: drop-shadow(0 2px 10px rgba(255,212,90,.15));
+  height: 120px; /* Subimos de 76px a 120px para mayor visibilidad */
+  width: auto; 
+  object-fit: contain;
+  filter: drop-shadow(0 4px 15px rgba(255,212,90,.2)); /* Sombra más definida */
+  transition: transform var(--t);
 }
 
+/* Agregamos esto para que al pasar el mouse se sienta vivo */
+.footer-logo-link:hover .footer-logo-img {
+  transform: scale(1.05);
+}
 .footer-desc {
   font-size: .875rem; line-height: 1.8;
   color: rgba(255,255,255,.42);
