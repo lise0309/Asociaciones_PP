@@ -20,7 +20,14 @@ $model = new ContratoModel();
 
 // ── LISTAR ──────────────────────────────────────────────
 if ($act === 'listar' && $_SERVER['REQUEST_METHOD']==='GET') {
-    $contratos = $model->listar($uid, $rol);
+    // Filtros para admin
+    $filtros = [
+        'vendedor' => $_GET['vendedor'] ?? '',
+        'estado'   => $_GET['estado']   ?? '',
+        'tipo'     => $_GET['tipo']      ?? '',
+        'buscar'   => $_GET['buscar']    ?? '',
+    ];
+    $contratos = $model->listar($uid, strtolower($rol), $filtros);
     echo json_encode(['ok'=>true,'contratos'=>$contratos]);
     exit;
 }
@@ -54,6 +61,41 @@ if ($act === 'ver' && $_SERVER['REQUEST_METHOD']==='GET') {
     $id = $_GET['id'] ?? '';
     $c  = $id ? $model->getById($id) : null;
     echo json_encode($c ? ['ok'=>true,'contrato'=>$c] : ['ok'=>false,'msg'=>'No encontrado']);
+    exit;
+}
+
+// ── LISTAR ESTADOS ───────────────────────────────────────
+if ($act === 'estados' && $_SERVER['REQUEST_METHOD']==='GET') {
+    $db      = Database::conectar();
+    $estados = $db->query("SELECT id, nombre_opcion, valor_extra FROM opciones_sistema WHERE categoria='estado_contrato' AND disponible=1 ORDER BY id")->fetchAll();
+    echo json_encode(['ok'=>true,'estados'=>$estados]);
+    exit;
+}
+
+// ── CAMBIAR ESTADO ───────────────────────────────────────
+if ($act === 'estado' && $_SERVER['REQUEST_METHOD']==='POST') {
+    $id        = $_POST['id']        ?? '';
+    $estadoId  = (int)($_POST['estado_id'] ?? 0);
+    if (!$id || !$estadoId) { echo json_encode(['ok'=>false,'msg'=>'Datos incompletos']); exit; }
+
+    try {
+        $db = Database::conectar();
+        // Verificar que el contrato pertenece al usuario (o es admin)
+        $check = $db->prepare("SELECT id FROM contratos WHERE id=:id AND (vendedor_id=:uid OR :rol='admin')");
+        $check->execute([':id'=>$id, ':uid'=>$uid, ':rol'=>$rol]);
+        if (!$check->fetch()) { echo json_encode(['ok'=>false,'msg'=>'Sin permiso']); exit; }
+
+        $ok = $db->prepare("UPDATE contratos SET estado_contrato_id=:est WHERE id=:id")
+                 ->execute([':est'=>$estadoId, ':id'=>$id]);
+
+        // Obtener nombre del nuevo estado para historial
+        $nombre = $db->query("SELECT nombre_opcion FROM opciones_sistema WHERE id=$estadoId LIMIT 1")->fetchColumn();
+        if ($ok) $model->historial($id, "Estado cambiado a: $nombre", $uid);
+
+        echo json_encode(['ok'=>$ok]);
+    } catch(Exception $e) {
+        echo json_encode(['ok'=>false,'msg'=>$e->getMessage()]);
+    }
     exit;
 }
 

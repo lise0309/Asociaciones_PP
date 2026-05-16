@@ -29,13 +29,46 @@ class ContratoModel {
         } catch (PDOException $e) { error_log($e->getMessage()); return false; }
     }
 
-    public function listar(string $vendedorId, string $rol='vendedor'): array {
-        $sql = "SELECT c.*,p.titulo_anuncio,pc.nombre_plantilla,ot.nombre_opcion AS tipo_nombre,oe.nombre_opcion AS estado_nombre,oe.valor_extra AS estado_color FROM contratos c JOIN propiedades p ON p.id=c.propiedad_id JOIN plantillas_contrato pc ON pc.id=c.plantilla_id JOIN opciones_sistema ot ON ot.id=c.tipo_contrato_id JOIN opciones_sistema oe ON oe.id=c.estado_contrato_id";
-        if ($rol!=='admin') $sql.=" WHERE c.vendedor_id=:vid";
-        $sql.=" ORDER BY c.fecha_generacion DESC";
-        $stmt=$this->db->prepare($sql);
-        if ($rol!=='admin') $stmt->bindValue(':vid',$vendedorId);
-        $stmt->execute();
+    public function listar(string $vendedorId, string $rol='vendedor', array $filtros=[]): array {
+        $sql = "SELECT c.*,p.titulo_anuncio,pc.nombre_plantilla,
+                       ot.nombre_opcion AS tipo_nombre,
+                       oe.nombre_opcion AS estado_nombre,
+                       oe.valor_extra   AS estado_color,
+                       CONCAT(u.nombre,' ',u.apellido) AS vendedor_nombre
+                FROM contratos c
+                JOIN propiedades p          ON p.id  = c.propiedad_id
+                JOIN plantillas_contrato pc ON pc.id = c.plantilla_id
+                JOIN opciones_sistema ot    ON ot.id = c.tipo_contrato_id
+                JOIN opciones_sistema oe    ON oe.id = c.estado_contrato_id
+                JOIN usuarios u             ON u.id  = c.vendedor_id
+                WHERE 1=1";
+
+        $params = [];
+
+        if (strtolower($rol) !== 'admin') {
+            $sql .= " AND c.vendedor_id = :vid";
+            $params[':vid'] = $vendedorId;
+        } elseif (!empty($filtros['vendedor'])) {
+            $sql .= " AND c.vendedor_id = :vid";
+            $params[':vid'] = $filtros['vendedor'];
+        }
+
+        if (!empty($filtros['estado'])) {
+            $sql .= " AND oe.nombre_opcion = :estado";
+            $params[':estado'] = $filtros['estado'];
+        }
+        if (!empty($filtros['tipo'])) {
+            $sql .= " AND c.tipo_contrato_id = :tipo";
+            $params[':tipo'] = $filtros['tipo'];
+        }
+        if (!empty($filtros['buscar'])) {
+            $sql .= " AND (c.nombre_comprador LIKE :buscar OR c.dui_comprador LIKE :buscar)";
+            $params[':buscar'] = '%' . $filtros['buscar'] . '%';
+        }
+
+        $sql .= " ORDER BY c.fecha_generacion DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 
