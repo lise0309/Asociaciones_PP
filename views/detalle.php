@@ -37,16 +37,33 @@
 
 <main id="mainContent" style="display:none;">
 
-  <section class="galeria-section">
-    <div class="galeria-grid" id="galeriaGrid"></div>
-    <div class="lightbox" id="lightbox">
-      <button class="lb-close" id="lbClose">✕</button>
-      <button class="lb-prev"  id="lbPrev">‹</button>
-      <button class="lb-next"  id="lbNext">›</button>
-      <img class="lb-img" id="lbImg" src="" alt="">
-      <div class="lb-counter" id="lbCounter"></div>
+  <!-- CARRUSEL DE FOTOS -->
+  <section class="carrusel-wrap" id="carruselWrap">
+    <div class="carrusel-main" id="carruselMain">
+      <!-- Imagen principal — se llena desde JS -->
+      <div class="carrusel-main-overlay"></div>
+      <button class="carrusel-btn carrusel-btn-prev" id="carruselPrev">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <button class="carrusel-btn carrusel-btn-next" id="carruselNext">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+      <button class="carrusel-btn-ampliar" id="carruselAmpliar">
+        <i class="fas fa-expand"></i> Ver ampliada
+      </button>
+      <div class="carrusel-counter" id="carruselCounter">1 / 1</div>
     </div>
+    <div class="carrusel-thumbs" id="carruselThumbs"></div>
   </section>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox">
+    <button class="lb-close" id="lbClose">✕</button>
+    <button class="lb-prev"  id="lbPrev">‹</button>
+    <button class="lb-next"  id="lbNext">›</button>
+    <img class="lb-img" id="lbImg" src="" alt="">
+    <div class="lb-counter" id="lbCounter"></div>
+  </div>
 
   <div class="det-container">
     <div class="det-layout">
