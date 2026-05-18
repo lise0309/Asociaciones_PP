@@ -58,7 +58,6 @@
     document.getElementById('spPrecio').innerHTML        = formatPrecio(p.precio_pedido, p.tipo_negocio, p.moneda);
     document.getElementById('spNeg').textContent         = p.tipo_negocio;
 
-    renderAcciones(p);
     renderFeats(p);
 
     if (p.descripcion_detallada) {
@@ -202,17 +201,25 @@
 
   /* ── Mapa Leaflet ── */
   function initMapa(lat, lng, titulo, ubicacion) {
-    // Botones bajo el mapa
+    // Botones bajo el mapa — flat premium
     const mapaAcc = document.getElementById('mapaAcciones');
     if (mapaAcc) {
       mapaAcc.innerHTML = `
         <a href="https://waze.com/ul?ll=${lat},${lng}&navigate=yes&zoom=17"
            target="_blank" rel="noopener" class="btn-accion btn-accion-waze">
-          <i class="fas fa-road"></i> Waze
+          <i class="fas fa-road"></i>
+          <span>
+            <span class="btn-accion-label">Cómo llegar</span>
+            <span class="btn-accion-sub">Abrir en Waze</span>
+          </span>
         </a>
         <a href="https://www.google.com/maps/search/?api=1&query=${lat},${lng}"
            target="_blank" rel="noopener" class="btn-accion btn-accion-gmaps">
-          <i class="fas fa-map"></i> Google Maps
+          <i class="fas fa-map-marked-alt"></i>
+          <span>
+            <span class="btn-accion-label">Ver ubicación</span>
+            <span class="btn-accion-sub">Abrir en Google Maps</span>
+          </span>
         </a>
       `;
     }
