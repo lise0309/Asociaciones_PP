@@ -20,6 +20,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
+  <!-- Font Awesome 5 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
   <link rel="stylesheet" href="assets/css/navbar.css">
   <link rel="stylesheet" href="assets/css/index.css">
   <link rel="stylesheet" href="assets/css/footer.css">
@@ -28,9 +31,6 @@
 
   <?php include 'views/layouts/navbar.php'; ?>
 
-  <!-- ═══════════════════════════════════════
-       LAYOUT PRINCIPAL
-  ═══════════════════════════════════════ -->
   <div class="page-layout" id="pageLayout">
 
     <!-- ── PANEL DE FILTROS ── -->
@@ -43,11 +43,9 @@
           </svg>
           Filtros
         </h3>
-        <!-- Botón cerrar en móvil -->
         <button class="filtros-close" id="filtrosClose" aria-label="Cerrar filtros">✕</button>
       </div>
 
-      <!-- Modalidad -->
       <div class="filtro-grupo">
         <label class="filtro-label">Modalidad</label>
         <div class="filtro-pills" id="filtroModalidad">
@@ -56,7 +54,6 @@
         </div>
       </div>
 
-      <!-- Tipo de propiedad -->
       <div class="filtro-grupo">
         <label class="filtro-label">Tipo de propiedad</label>
         <select class="filtro-select" id="filtroTipo">
@@ -69,7 +66,6 @@
         </select>
       </div>
 
-      <!-- Departamento -->
       <div class="filtro-grupo">
         <label class="filtro-label">Departamento</label>
         <select class="filtro-select" id="filtroCiudad">
@@ -91,7 +87,6 @@
         </select>
       </div>
 
-      <!-- Sector -->
       <div class="filtro-grupo">
         <label class="filtro-label">Sector</label>
         <select class="filtro-select" id="filtroSector">
@@ -104,7 +99,6 @@
         </select>
       </div>
 
-      <!-- Estado -->
       <div class="filtro-grupo">
         <label class="filtro-label">Estado del inmueble</label>
         <select class="filtro-select" id="filtroEstado">
@@ -116,7 +110,6 @@
         </select>
       </div>
 
-      <!-- Precio -->
       <div class="filtro-grupo">
         <label class="filtro-label">Precio (USD)</label>
         <div class="filtro-precio-row">
@@ -125,7 +118,6 @@
         </div>
       </div>
 
-      <!-- Moneda -->
       <div class="filtro-grupo">
         <label class="filtro-label">Moneda</label>
         <div class="filtro-pills" id="filtroMoneda">
@@ -136,12 +128,6 @@
       </div>
 
       <div class="filtro-actions">
-        <button class="btn-buscar" id="btnBuscar">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"/>
-          </svg>
-          Buscar propiedades
-        </button>
         <button class="btn-limpiar" id="btnLimpiar">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4z" clip-rule="evenodd"/>
@@ -152,7 +138,7 @@
 
     </aside>
 
-    <!-- Botón toggle sidebar (visible en desktop) -->
+    <!-- Toggle sidebar -->
     <button class="sidebar-toggle-btn" id="sidebarToggleBtn" aria-label="Mostrar/ocultar filtros" title="Mostrar/ocultar filtros">
       <svg class="toggle-icon-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
         <path fill-rule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.972.206 7.372.601a.75.75 0 01.628.74v2.288a2.25 2.25 0 01-.659 1.59l-4.682 4.683a2.25 2.25 0 00-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 018 18.25v-5.757a2.25 2.25 0 00-.659-1.591L2.659 6.22A2.25 2.25 0 012 4.628V2.34a.75.75 0 01.628-.74z" clip-rule="evenodd"/>
@@ -211,8 +197,8 @@
                   <span>Visualiza todas las propiedades por ubicación real</span>
                 </div>
               </div>
-              <a href="views/propiedades/mapa.php" class="btn-abrir-mapa">
-                Abrir mapa
+              <a href="views/mapa.php" class="btn-abrir-mapa">
+                <i class="fas fa-map"></i> Abrir mapa
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd"/>
                 </svg>
@@ -228,7 +214,6 @@
           <span class="resultados-count">
             <strong id="totalCount">868</strong> propiedades encontradas
           </span>
-          <!-- Botón filtros solo en móvil -->
           <button class="btn-filtros-mobile" id="btnFiltrosMobile">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.972.206 7.372.601a.75.75 0 01.628.74v2.288a2.25 2.25 0 01-.659 1.59l-4.682 4.683a2.25 2.25 0 00-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 018 18.25v-5.757a2.25 2.25 0 00-.659-1.591L2.659 6.22A2.25 2.25 0 012 4.628V2.34a.75.75 0 01.628-.74z" clip-rule="evenodd"/>
@@ -247,18 +232,15 @@
         </div>
       </div>
 
-      <!-- GRID PROPIEDADES — se llena desde BD via JS -->
+      <!-- GRID PROPIEDADES -->
       <div class="props-grid" id="propsGrid"></div>
 
       <!-- PAGINACIÓN -->
-      <div class="paginacion" id="paginacion">
-        <!-- Se llena via JS -->
-      </div>
+      <div class="paginacion" id="paginacion"></div>
 
     </main>
   </div>
 
-  <!-- Overlay para móvil -->
   <div class="filtros-overlay" id="filtrosOverlay"></div>
 
   <?php include 'views/layouts/footer.php'; ?>
