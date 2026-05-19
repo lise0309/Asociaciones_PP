@@ -1,26 +1,16 @@
 /**
- * PERFIL JS
- * PP Bienes Raíces
+ * PERFIL JS - PP Bienes Raíces
  */
 
 const API_URL = '../controllers/PerfilController.php';
 
-// Mostrar toast
 function mostrarToast(mensaje, tipo = 'success') {
     const container = document.getElementById('toastMessages');
     if (!container) return;
     
     const toast = document.createElement('div');
     toast.className = `toast-message toast-${tipo}`;
-    toast.innerHTML = `
-        <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
-            ${tipo === 'success' ? 
-                '<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/>' :
-                '<path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>'
-            }
-        </svg>
-        <span>${mensaje}</span>
-    `;
+    toast.innerHTML = `<span>${mensaje}</span>`;
     
     container.appendChild(toast);
     setTimeout(() => toast.remove(), 3500);
@@ -69,7 +59,7 @@ formEditarPerfil?.addEventListener('submit', async (e) => {
             document.getElementById('infoTelefono').innerText = data.telefono || 'No especificado';
             document.getElementById('perfilNombre').innerText = `${data.nombre} ${data.apellido}`;
             modalEditarPerfil.style.display = 'none';
-            mostrarToast('Perfil actualizado correctamente', 'success');
+            mostrarToast('Perfil actualizado', 'success');
         } else {
             mostrarToast(result.error || 'Error al actualizar', 'error');
         }
@@ -106,19 +96,16 @@ formCambiarPassword?.addEventListener('submit', async (e) => {
     const confirmarPassword = document.getElementById('confirmarPasswordModal').value;
     
     if (nuevaPassword !== confirmarPassword) {
-        mostrarToast('Las contraseñas nuevas no coinciden', 'error');
+        mostrarToast('Las contraseñas no coinciden', 'error');
         return;
     }
     
     if (nuevaPassword.length < 6) {
-        mostrarToast('La nueva contraseña debe tener al menos 6 caracteres', 'error');
+        mostrarToast('Mínimo 6 caracteres', 'error');
         return;
     }
     
-    const data = { 
-        password_actual: passwordActual, 
-        nueva_password: nuevaPassword 
-    };
+    const data = { password_actual: passwordActual, nueva_password: nuevaPassword };
     
     try {
         const response = await fetch(`${API_URL}?accion=cambiar_password`, {
@@ -129,55 +116,11 @@ formCambiarPassword?.addEventListener('submit', async (e) => {
         const result = await response.json();
         
         if (result.success) {
-            document.getElementById('formCambiarPasswordModal').reset();
+            formCambiarPassword.reset();
             modalCambiarPassword.style.display = 'none';
-            mostrarToast('Contraseña actualizada correctamente', 'success');
+            mostrarToast('Contraseña actualizada', 'success');
         } else {
-            mostrarToast(result.error || 'Error al cambiar contraseña', 'error');
-        }
-    } catch (error) {
-        mostrarToast('Error de conexión', 'error');
-    }
-});
-
-// ==================== SUBIR DOCUMENTO ====================
-const btnSubirDocumento = document.getElementById('btnSubirDocumento');
-const modalSubirDocumento = document.getElementById('modalSubirDocumento');
-const closeSubirDocumento = document.getElementById('closeSubirDocumento');
-const formSubirDocumento = document.getElementById('formSubirDocumento');
-
-btnSubirDocumento?.addEventListener('click', () => {
-    modalSubirDocumento.style.display = 'flex';
-});
-
-closeSubirDocumento?.addEventListener('click', () => {
-    modalSubirDocumento.style.display = 'none';
-});
-
-modalSubirDocumento?.addEventListener('click', (e) => {
-    if (e.target === modalSubirDocumento) {
-        modalSubirDocumento.style.display = 'none';
-    }
-});
-
-formSubirDocumento?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const formData = new FormData();
-    formData.append('tipo', document.getElementById('docTipo').value);
-    formData.append('archivo', document.getElementById('docArchivo').files[0]);
-    
-    try {
-        const response = await fetch(`${API_URL}?accion=subir_documento`, {
-            method: 'POST',
-            body: formData
-        });
-        const result = await response.json();
-        
-        if (result.success) {
-            location.reload();
-        } else {
-            mostrarToast(result.error || 'Error al subir documento', 'error');
+            mostrarToast(result.error || 'Error', 'error');
         }
     } catch (error) {
         mostrarToast('Error de conexión', 'error');
@@ -226,21 +169,3 @@ formCambiarFoto?.addEventListener('submit', async (e) => {
         mostrarToast('Error de conexión', 'error');
     }
 });
-
-// ==================== ELIMINAR DOCUMENTO ====================
-window.eliminarDocumento = async (id) => {
-    if (!confirm('¿Eliminar este documento?')) return;
-    
-    try {
-        const response = await fetch(`${API_URL}?accion=eliminar_documento&id=${id}`);
-        const result = await response.json();
-        
-        if (result.success) {
-            location.reload();
-        } else {
-            mostrarToast('Error al eliminar', 'error');
-        }
-    } catch (error) {
-        mostrarToast('Error de conexión', 'error');
-    }
-};
