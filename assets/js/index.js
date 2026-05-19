@@ -1,6 +1,5 @@
 /**
- * index.js
- * PP Bienes Raíces — assets/js/index.js
+ * index.js — PP Bienes Raíces
  * Vista pública — conectado a BD con overlay de carga
  */
 
@@ -11,16 +10,12 @@
   const filtrosPanel     = document.getElementById('filtrosPanel');
   const filtrosOverlay   = document.getElementById('filtrosOverlay');
   const filtrosClose     = document.getElementById('filtrosClose');
-  const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
   const btnFiltrosMobile = document.getElementById('btnFiltrosMobile');
-  const iconOpen         = sidebarToggleBtn?.querySelector('.toggle-icon-open');
-  const iconClose        = sidebarToggleBtn?.querySelector('.toggle-icon-close');
   const propsGrid        = document.getElementById('propsGrid');
   const totalCount       = document.getElementById('totalCount');
   const btnLimpiar       = document.getElementById('btnLimpiar');
   const ordenSelect      = document.getElementById('ordenSelect');
   const paginacion       = document.getElementById('paginacion');
-
   const filtroModalidad  = document.getElementById('filtroModalidad');
   const filtroTipo       = document.getElementById('filtroTipo');
   const filtroCiudad     = document.getElementById('filtroCiudad');
@@ -36,7 +31,6 @@
 
   /* ── Overlay de carga ── */
   let loadingOverlay = null;
-
   function mostrarOverlayCarga() {
     if (loadingOverlay) return;
     loadingOverlay = document.createElement('div');
@@ -46,7 +40,6 @@
     document.body.appendChild(loadingOverlay);
     if (propsGrid) { propsGrid.style.transition='opacity .2s ease'; propsGrid.style.opacity='.4'; }
   }
-
   function ocultarOverlayCarga() {
     if (loadingOverlay) {
       loadingOverlay.style.opacity = '0';
@@ -55,19 +48,32 @@
     if (propsGrid) propsGrid.style.opacity = '1';
   }
 
-  /* ── Toggle sidebar desktop ── */
-  function toggleSidebar() {
-    sidebarVisible = !sidebarVisible;
-    pageLayout?.classList.toggle('sidebar-hidden', !sidebarVisible);
-    if (iconOpen)  iconOpen.style.display  = sidebarVisible ? 'block' : 'none';
-    if (iconClose) iconClose.style.display = sidebarVisible ? 'none'  : 'block';
+  /* ── Toggle sidebar — botón dentro del header, sin posición calculada ── */
+  const btnColapsar   = document.getElementById('btnColapsar');
+  const sidebarReabrir = document.getElementById('sidebarReabrir');
+  const iconColapsar  = document.getElementById('iconColapsar');
+
+  function colapsarSidebar() {
+    sidebarVisible = false;
+    pageLayout?.classList.add('sidebar-hidden');
+    if (iconColapsar) iconColapsar.className = 'fas fa-chevron-right';
+    if (sidebarReabrir) sidebarReabrir.classList.add('visible');
   }
-  sidebarToggleBtn?.addEventListener('click', toggleSidebar);
+  function abrirSidebar() {
+    sidebarVisible = true;
+    pageLayout?.classList.remove('sidebar-hidden');
+    if (iconColapsar) iconColapsar.className = 'fas fa-chevron-left';
+    if (sidebarReabrir) sidebarReabrir.classList.remove('visible');
+  }
+
+  btnColapsar?.addEventListener('click', () => {
+    sidebarVisible ? colapsarSidebar() : abrirSidebar();
+  });
+  sidebarReabrir?.addEventListener('click', abrirSidebar);
 
   /* ── Filtros móvil ── */
-  function abrirFiltros() { filtrosPanel?.classList.add('open'); filtrosOverlay?.classList.add('active'); document.body.style.overflow='hidden'; }
+  function abrirFiltros()  { filtrosPanel?.classList.add('open');    filtrosOverlay?.classList.add('active');    document.body.style.overflow='hidden'; }
   function cerrarFiltros() { filtrosPanel?.classList.remove('open'); filtrosOverlay?.classList.remove('active'); document.body.style.overflow=''; }
-
   btnFiltrosMobile?.addEventListener('click', abrirFiltros);
   filtrosClose?.addEventListener('click', cerrarFiltros);
   filtrosOverlay?.addEventListener('click', cerrarFiltros);
@@ -93,7 +99,6 @@
     let negocio = '';
     if (pillModalidad === 'venta') negocio = 'venta';
     else if (pillModalidad === 'renta') negocio = 'alquiler';
-
     const params = new URLSearchParams({ accion:'listar', orden: ordenSelect?.value ?? 'recientes', pagina: paginaActual });
     if (negocio)              params.set('negocio', negocio);
     if (filtroTipo?.value)    params.set('tipo', filtroTipo.value);
@@ -120,31 +125,23 @@
     if (!propsGrid || isLoading) return;
     isLoading = true;
     mostrarOverlayCarga();
-
     try {
       const res  = await fetch(`${PROP_URL}?${getFiltros()}`);
       const data = await res.json();
       if (!data.ok) throw new Error(data.msg || 'Error al cargar');
-
       if (totalCount) animateNumber(totalCount, parseInt(totalCount.textContent)||0, data.total);
-
       if (!data.propiedades.length) {
         propsGrid.innerHTML = `<div class="props-empty"><i class="fas fa-home"></i><p>No se encontraron propiedades con esos filtros.</p><button onclick="limpiarFiltrosExterno()">Limpiar filtros</button></div>`;
-        document.getElementById('paginacion').innerHTML = '';
+        if (paginacion) paginacion.innerHTML = '';
         return;
       }
-
       propsGrid.innerHTML = data.propiedades.map((p, i) => renderCard(p, i)).join('');
-
-      // Animar entrada de tarjetas
       setTimeout(() => {
         propsGrid.querySelectorAll('.prop-card').forEach((card, i) => {
           card.style.animationDelay = `${i * 0.04}s`;
         });
       }, 50);
-
       renderPaginacion(data.pagina, data.total_pags);
-
     } catch (err) {
       propsGrid.innerHTML = `<div class="props-empty"><p>Error al cargar propiedades.</p><button onclick="location.reload()">Reintentar</button></div>`;
     } finally {
@@ -153,31 +150,23 @@
     }
   }
 
-  /* ══════════════════════════════════════
-     RENDER CARD — FLAT STYLE CON FONT AWESOME
-     Cuadradas, 4 columnas, iconos FA, más azul
-  ══════════════════════════════════════ */
+  /* ── Render card ── */
   function renderCard(p, index) {
     const esAlquiler = (p.tipo_negocio === 'Alquiler' || p.tipo_negocio === 'Alquiler con opción a compra');
     const destacada  = p.es_anuncio_destacado == 1;
     const icono      = getFAIcon(p.tipo_inmueble);
     const codigo     = '#' + String(p.id).substring(0,8).toUpperCase();
     const precio     = formatPrecio(p.precio_pedido, p.tipo_negocio);
-
-    // Foto o placeholder
     const imgHtml = p.foto_portada
       ? `<img src="${p.foto_portada}" alt="${escapeHtml(p.titulo_anuncio)}" class="prop-img-real" loading="lazy"
              onerror="this.parentNode.innerHTML='<div class=\\'prop-img-ph\\'><i class=\\'fas ${icono}\\'></i><span>${escapeHtml(p.tipo_inmueble||'')}</span></div>'">`
       : `<div class="prop-img-ph"><i class="fas ${icono}"></i><span>${escapeHtml(p.tipo_inmueble||'Propiedad')}</span></div>`;
-
-    // Chips FA
     const chips = [];
     if (p.num_habitaciones)    chips.push(`<span class="feat-chip"><i class="fas fa-bed"></i> ${p.num_habitaciones}</span>`);
     if (p.num_banos)           chips.push(`<span class="feat-chip"><i class="fas fa-bath"></i> ${p.num_banos}</span>`);
     if (p.metros_construccion) chips.push(`<span class="feat-chip"><i class="fas fa-ruler-combined"></i> ${Number(p.metros_construccion).toLocaleString()}m²</span>`);
     else if (p.metros_terreno) chips.push(`<span class="feat-chip"><i class="fas fa-expand-arrows-alt"></i> ${Number(p.metros_terreno).toLocaleString()}m²</span>`);
     if (p.tiene_piscina==1)    chips.push(`<span class="feat-chip"><i class="fas fa-swimming-pool"></i></span>`);
-
     return `
     <article class="prop-card ${destacada?'prop-card-destacada':''}"
              onclick="window.location.href='/Asociaciones_PP/views/detalle.php?id=${p.id}'">
@@ -208,7 +197,6 @@
     </article>`;
   }
 
-  /* ── Iconos FA por tipo ── */
   function getFAIcon(tipo) {
     const map = {'Casa':'fa-home','Apartamento':'fa-building','Local comercial':'fa-store','Terreno':'fa-mountain','Bodega':'fa-warehouse','Finca':'fa-leaf','Oficina':'fa-briefcase'};
     return map[tipo] || 'fa-home';
@@ -236,19 +224,16 @@
     });
   }
 
-  /* ── Precio ── */
   function formatPrecio(precio, negocio) {
     const num = parseFloat(precio).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
     return `US$ ${num}`;
   }
 
-  /* ── Escape ── */
   function escapeHtml(str) {
     if(!str) return '';
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  /* ── Debounce ── */
   function buscarConDebounce() {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => { paginaActual=1; cargarPropiedades(); }, 350);
@@ -260,7 +245,10 @@
     if (filtroCiudad) filtroCiudad.selectedIndex=0;
     if (precioMin) precioMin.value='';
     if (precioMax) precioMax.value='';
-    document.querySelectorAll('.filtro-pills').forEach(g => { g.querySelectorAll('.pill').forEach(p=>p.classList.remove('active')); g.querySelector('.pill')?.classList.add('active'); });
+    document.querySelectorAll('.filtro-pills').forEach(g => {
+      g.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+      g.querySelector('.pill')?.classList.add('active');
+    });
     if (ordenSelect) ordenSelect.selectedIndex=0;
     paginaActual=1; cargarPropiedades();
     if (window.innerWidth<=768) cerrarFiltros();
@@ -281,6 +269,15 @@
       if (nums[3]) animateNumber(nums[3], 0, 3200);
     } catch(e) {}
   }
+
+  /* ── Banner renta — filtrar por renta al hacer click ── */
+  document.getElementById('btnVerRentas')?.addEventListener('click', () => {
+    document.querySelectorAll('#filtroModalidad .pill').forEach(b => b.classList.remove('active'));
+    document.querySelector('#filtroModalidad .pill[data-val="renta"]')?.classList.add('active');
+    paginaActual = 1;
+    cargarPropiedades();
+    propsGrid?.scrollIntoView({ behavior:'smooth', block:'start' });
+  });
 
   /* ── Event listeners ── */
   btnLimpiar?.addEventListener('click', window.limpiarFiltrosExterno);

@@ -19,10 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-  <!-- Font Awesome 5 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-
   <link rel="stylesheet" href="assets/css/navbar.css">
   <link rel="stylesheet" href="assets/css/index.css">
   <link rel="stylesheet" href="assets/css/footer.css">
@@ -43,14 +40,18 @@
           </svg>
           Filtros
         </h3>
-        <button class="filtros-close" id="filtrosClose" aria-label="Cerrar filtros">✕</button>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="btn-colapsar" id="btnColapsar" title="Ocultar filtros" aria-label="Ocultar filtros">
+            <i class="fas fa-chevron-left" id="iconColapsar"></i>
+          </button>
+          <button class="filtros-close" id="filtrosClose" aria-label="Cerrar filtros">✕</button>
+        </div>
       </div>
 
       <div class="filtro-grupo">
         <label class="filtro-label">Modalidad</label>
         <div class="filtro-pills" id="filtroModalidad">
           <button class="pill active" data-val="venta">Venta</button>
-          <button class="pill" data-val="renta">Renta</button>
         </div>
       </div>
 
@@ -70,20 +71,11 @@
         <label class="filtro-label">Departamento</label>
         <select class="filtro-select" id="filtroCiudad">
           <option value="">Todos</option>
-          <option>Ahuachapán</option>
-          <option>Cabañas</option>
-          <option>Chalatenango</option>
-          <option>Cuscatlán</option>
-          <option>La Libertad</option>
-          <option>La Paz</option>
-          <option>La Unión</option>
-          <option>Morazán</option>
-          <option>San Miguel</option>
-          <option>San Salvador</option>
-          <option>San Vicente</option>
-          <option>Santa Ana</option>
-          <option>Sonsonate</option>
-          <option>Usulután</option>
+          <option>Ahuachapán</option><option>Cabañas</option><option>Chalatenango</option>
+          <option>Cuscatlán</option><option>La Libertad</option><option>La Paz</option>
+          <option>La Unión</option><option>Morazán</option><option>San Miguel</option>
+          <option>San Salvador</option><option>San Vicente</option><option>Santa Ana</option>
+          <option>Sonsonate</option><option>Usulután</option>
         </select>
       </div>
 
@@ -91,11 +83,8 @@
         <label class="filtro-label">Sector</label>
         <select class="filtro-select" id="filtroSector">
           <option value="">Todos</option>
-          <option>Residencial</option>
-          <option>Comercial</option>
-          <option>Industrial</option>
-          <option>Agrícola</option>
-          <option>Turístico</option>
+          <option>Residencial</option><option>Comercial</option>
+          <option>Industrial</option><option>Agrícola</option><option>Turístico</option>
         </select>
       </div>
 
@@ -103,10 +92,8 @@
         <label class="filtro-label">Estado del inmueble</label>
         <select class="filtro-select" id="filtroEstado">
           <option value="">Todos</option>
-          <option>Nuevo</option>
-          <option>Excelente estado</option>
-          <option>Buen estado</option>
-          <option>Para remodelar</option>
+          <option>Nuevo</option><option>Excelente estado</option>
+          <option>Buen estado</option><option>Para remodelar</option>
         </select>
       </div>
 
@@ -118,12 +105,13 @@
         </div>
       </div>
 
+      <!-- Solo USD — decorativo -->
       <div class="filtro-grupo">
         <label class="filtro-label">Moneda</label>
         <div class="filtro-pills" id="filtroMoneda">
-          <button class="pill active" data-val="usd">USD</button>
-          <button class="pill" data-val="eur">€ EUR</button>
-          <button class="pill" data-val="btc">₿ BTC</button>
+          <button class="pill active" data-val="usd">
+            <i class="fas fa-dollar-sign"></i> USD
+          </button>
         </div>
       </div>
 
@@ -137,16 +125,6 @@
       </div>
 
     </aside>
-
-    <!-- Toggle sidebar -->
-    <button class="sidebar-toggle-btn" id="sidebarToggleBtn" aria-label="Mostrar/ocultar filtros" title="Mostrar/ocultar filtros">
-      <svg class="toggle-icon-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-        <path fill-rule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.972.206 7.372.601a.75.75 0 01.628.74v2.288a2.25 2.25 0 01-.659 1.59l-4.682 4.683a2.25 2.25 0 00-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 018 18.25v-5.757a2.25 2.25 0 00-.659-1.591L2.659 6.22A2.25 2.25 0 012 4.628V2.34a.75.75 0 01.628-.74z" clip-rule="evenodd"/>
-      </svg>
-      <svg class="toggle-icon-close" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="display:none">
-        <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/>
-      </svg>
-    </button>
 
     <!-- ── CONTENIDO PRINCIPAL ── -->
     <main class="contenido-principal" id="contenidoPrincipal">
@@ -183,7 +161,6 @@
             </div>
           </div>
 
-          <!-- Banner mapa -->
           <div class="mapa-banner">
             <div class="mapa-banner-inner">
               <div class="mapa-banner-left">
@@ -232,6 +209,23 @@
         </div>
       </div>
 
+      <!-- BANNER RENTA -->
+      <div class="banner-renta">
+        <div class="banner-renta-inner">
+          <div class="banner-renta-izq">
+            <span class="banner-renta-badge">
+              <i class="fas fa-key"></i> Propiedades en renta
+            </span>
+            <p class="banner-renta-texto">
+              ¿Te interesa alquilar? Tenemos residencias y locales disponibles ahora mismo.
+            </p>
+          </div>
+          <button class="banner-renta-btn" id="btnVerRentas">
+            <i class="fas fa-arrow-right"></i> Ver propiedades en renta
+          </button>
+        </div>
+      </div>
+
       <!-- GRID PROPIEDADES -->
       <div class="props-grid" id="propsGrid"></div>
 
@@ -240,6 +234,11 @@
 
     </main>
   </div>
+
+  <!-- Botón reabrir sidebar — solo visible cuando el sidebar está colapsado -->
+  <button class="sidebar-reabrir" id="sidebarReabrir" title="Mostrar filtros">
+    <i class="fas fa-chevron-right"></i>
+  </button>
 
   <div class="filtros-overlay" id="filtrosOverlay"></div>
 
