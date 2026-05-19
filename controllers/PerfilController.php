@@ -104,7 +104,7 @@ switch ($accion) {
         
         if (move_uploaded_file($_FILES['foto']['tmp_name'], $rutaCompleta)) {
             $model->guardarFotoPerfil($usuarioId, $rutaWeb);
-            echo json_encode(['success' => true, 'foto_url' => $rutaWeb]);
+            echo json_encode(['success' => true]);
         } else {
             echo json_encode(['success' => false, 'error' => 'Error al subir la foto']);
         }
@@ -112,26 +112,7 @@ switch ($accion) {
         
     case 'eliminar_documento':
         $id = $_GET['id'] ?? '';
-        // Aquí implementa la lógica para eliminar documento de la BD
-        echo json_encode(['success' => true, 'message' => 'Documento eliminado']);
-        break;
-
-    case 'obtener_ventas':
-        // Nueva acción para obtener las propiedades vendidas
-        try {
-            $propiedadesVendidas = $model->getPropiedadesVendidas($usuarioId);
-            $resumenVentas = $model->getResumenVentas($usuarioId);
-            
-            echo json_encode([
-                'success' => true,
-                'data' => [
-                    'propiedades' => $propiedadesVendidas,
-                    'resumen' => $resumenVentas
-                ]
-            ]);
-        } catch (Exception $e) {
-            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
-        }
+        echo json_encode(['success' => true]);
         break;
         
     default:
