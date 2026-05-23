@@ -270,13 +270,39 @@
     } catch(e) {}
   }
 
-  /* ── Banner renta — filtrar por renta al hacer click ── */
+  /* ── Banner renta — forzar filtro alquiler directo ── */
   document.getElementById('btnVerRentas')?.addEventListener('click', () => {
-    document.querySelectorAll('#filtroModalidad .pill').forEach(b => b.classList.remove('active'));
-    document.querySelector('#filtroModalidad .pill[data-val="renta"]')?.classList.add('active');
+    // Limpiar filtros primero
+    if (filtroTipo)    filtroTipo.selectedIndex = 0;
+    if (filtroCiudad)  filtroCiudad.selectedIndex = 0;
+    if (precioMin)     precioMin.value = '';
+    if (precioMax)     precioMax.value = '';
     paginaActual = 1;
-    cargarPropiedades();
-    propsGrid?.scrollIntoView({ behavior:'smooth', block:'start' });
+
+    // Cargar directamente con negocio=alquiler, ignorando las pills
+    mostrarOverlayCarga();
+    isLoading = true;
+    fetch(`${PROP_URL}?accion=listar&negocio=alquiler&orden=recientes&pagina=1`)
+      .then(r => r.json())
+      .then(data => {
+        if (!data.ok) throw new Error(data.msg || 'Error');
+        if (totalCount) animateNumber(totalCount, parseInt(totalCount.textContent)||0, data.total);
+        if (!data.propiedades?.length) {
+          propsGrid.innerHTML = `<div class="props-empty"><i class="fas fa-key"></i><p>No hay propiedades en renta disponibles.</p></div>`;
+          if (paginacion) paginacion.innerHTML = '';
+          return;
+        }
+        propsGrid.innerHTML = data.propiedades.map((p, i) => renderCard(p, i)).join('');
+        renderPaginacion(data.pagina, data.total_pags);
+        propsGrid?.scrollIntoView({ behavior:'smooth', block:'start' });
+      })
+      .catch(() => {
+        propsGrid.innerHTML = `<div class="props-empty"><p>Error al cargar rentas.</p></div>`;
+      })
+      .finally(() => {
+        setTimeout(() => { ocultarOverlayCarga(); }, 300);
+        isLoading = false;
+      });
   });
 
   /* ── Event listeners ── */
@@ -300,6 +326,17 @@
   document.head.appendChild(style);
 
   /* ── Inicializar ── */
+  // Sincronizar estado visual del sidebar al cargar
+  if (pageLayout?.classList.contains('sidebar-hidden')) {
+    sidebarVisible = false;
+    if (iconColapsar) iconColapsar.className = 'fas fa-chevron-right';
+    if (sidebarReabrir) sidebarReabrir.classList.add('visible');
+  } else {
+    sidebarVisible = true;
+    if (iconColapsar) iconColapsar.className = 'fas fa-chevron-left';
+    if (sidebarReabrir) sidebarReabrir.classList.remove('visible');
+  }
+
   cargarStats();
   cargarPropiedades();
 
