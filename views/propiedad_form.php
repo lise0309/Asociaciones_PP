@@ -316,12 +316,12 @@ $departamentos = [
                                             <label class="check-option">
                                                 <input type="checkbox" name="piscina" value="1"
                                                        <?= ($propiedad['tiene_piscina'] ?? 0) ? 'checked' : '' ?>>
-                                                <span>🏊 Piscina</span>
+                                                <span> Piscina</span>
                                             </label>
                                             <label class="check-option">
                                                 <input type="checkbox" name="amueblado" value="1"
                                                        <?= ($propiedad['viene_amueblado'] ?? 0) ? 'checked' : '' ?>>
-                                                <span>🛋️ Amueblado</span>
+                                                <span> Amueblado</span>
                                             </label>
                                         </div>
                                     </div>
@@ -340,12 +340,12 @@ $departamentos = [
                                             <label class="toggle-option">
                                                 <input type="radio" name="visibilidad" value="publica"
                                                     <?= (!$es_edicion || ($propiedad['estado_publicacion_id'] ?? 0) != 12) ? 'checked' : '' ?>>
-                                                <span>🌐 Pública</span>
+                                                <span> Pública</span>
                                             </label>
                                             <label class="toggle-option">
                                                 <input type="radio" name="visibilidad" value="privada"
                                                     <?= (($propiedad['estado_publicacion_id'] ?? 0) == 12) ? 'checked' : '' ?>>
-                                                <span>🔒 Privada</span>
+                                                <span> Privada</span>
                                             </label>
                                         </div>
                                     </div>
@@ -356,7 +356,7 @@ $departamentos = [
                                             <label class="toggle-option">
                                                 <input type="radio" name="destacar_radio" value="1"
                                                     <?= ($propiedad['es_anuncio_destacado'] ?? 0) ? 'checked' : '' ?>>
-                                                <span>⭐ Sí, destacar</span>
+                                                <span> Sí, destacar</span>
                                             </label>
                                             <label class="toggle-option">
                                                 <input type="radio" name="destacar_radio" value="0"
@@ -380,7 +380,7 @@ $departamentos = [
                         <?php if ($es_edicion): ?>
                             <button type="button" class="btn-danger" id="btnEliminar"
                                     onclick="confirmarEliminar('<?= $propiedad_id ?>','<?= htmlspecialchars($propiedad['titulo_anuncio'] ?? '') ?>')">
-                                🗑 Eliminar propiedad
+                                 Eliminar propiedad
                             </button>
                         <?php endif; ?>
                         <button type="button" class="btn-secondary" id="btnCancelar">Cancelar</button>

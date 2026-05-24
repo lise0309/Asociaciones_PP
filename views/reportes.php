@@ -34,7 +34,7 @@ $titulo_pagina = 'Reportes y Analytics';
             <div class="reportes-container">
 
                 <div class="page-header">
-                    <h1>📊 Reportes y Analytics</h1>
+                    <h1> Reportes y Analytics</h1>
                     <p>Visualiza el rendimiento de tu plataforma</p>
                 </div>
 
@@ -46,22 +46,22 @@ $titulo_pagina = 'Reportes y Analytics';
                 <!-- Gráficas -->
                 <div class="charts-row">
                     <div class="chart-card">
-                        <div class="chart-header"><h3>📈 Contratos por mes</h3></div>
+                        <div class="chart-header"><h3> Contratos por mes</h3></div>
                         <div class="chart-body"><canvas id="chartContratosMes" height="250"></canvas></div>
                     </div>
                     <div class="chart-card">
-                        <div class="chart-header"><h3>💰 Monto total por mes</h3></div>
+                        <div class="chart-header"><h3> Monto total por mes</h3></div>
                         <div class="chart-body"><canvas id="chartMontoMes" height="250"></canvas></div>
                     </div>
                 </div>
 
                 <div class="charts-row">
                     <div class="chart-card">
-                        <div class="chart-header"><h3>🏠 Propiedades por tipo</h3></div>
+                        <div class="chart-header"><h3> Propiedades por tipo</h3></div>
                         <div class="chart-body"><canvas id="chartPropiedadesTipo" height="250"></canvas></div>
                     </div>
                     <div class="chart-card">
-                        <div class="chart-header"><h3>📄 Contratos por estado</h3></div>
+                        <div class="chart-header"><h3> Contratos por estado</h3></div>
                         <div class="chart-body"><canvas id="chartContratosEstado" height="250"></canvas></div>
                     </div>
                 </div>
@@ -69,7 +69,7 @@ $titulo_pagina = 'Reportes y Analytics';
                 <!-- Tablas -->
                 <div class="tables-row">
                     <div class="table-card">
-                        <div class="table-header"><h3>🏆 Top Vendedores</h3></div>
+                        <div class="table-header"><h3> Top Vendedores</h3></div>
                         <div class="table-body">
                             <table class="data-table" id="tablaVendedores">
                                 <thead><tr><th>Vendedor</th><th>Ventas</th><th>Monto total</th></tr></thead>
@@ -78,7 +78,7 @@ $titulo_pagina = 'Reportes y Analytics';
                         </div>
                     </div>
                     <div class="table-card">
-                        <div class="table-header"><h3>🔥 Propiedades destacadas</h3></div>
+                        <div class="table-header"><h3> Propiedades destacadas</h3></div>
                         <div class="table-body">
                             <table class="data-table" id="tablaPropiedades">
                                 <thead><tr><th>Propiedad</th><th>Precio</th><th>Vendedor</th></tr></thead>

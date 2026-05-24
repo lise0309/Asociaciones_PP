@@ -77,9 +77,9 @@ if (!$usuario) {
             <?php endif; ?>
         </div>
         <div class="perfil-location">
-            <span>📍 El Salvador</span>
+            <span> El Salvador</span>
             <span>•</span>
-            <span>📅 Desde <?php echo date('Y', strtotime($usuario['fecha_registro'] ?? 'now')); ?></span>
+            <span> Desde <?php echo date('Y', strtotime($usuario['fecha_registro'] ?? 'now')); ?></span>
         </div>
     </div>
 </div>
@@ -87,8 +87,8 @@ if (!$usuario) {
                 <!-- Información personal -->
                 <div class="perfil-card">
                     <div class="card-header">
-                        <h3>📋 Información personal</h3>
-                        <button class="btn-edit" id="btnEditarPerfil">✏️ Editar</button>
+                        <h3> Información personal</h3>
+                        <button class="btn-edit" id="btnEditarPerfil"> Editar</button>
                     </div>
                     <div class="card-body">
                         <div class="info-row">
@@ -113,14 +113,14 @@ if (!$usuario) {
                 <!-- Seguridad - Botón pequeño -->
                 <div class="security-section">
                     <button class="btn-security" id="btnCambiarPasswordModal">
-                        🔒 Cambiar contraseña
+                         Cambiar contraseña
                     </button>
                 </div>
 
                 <!-- Historial de Propiedades Vendidas -->
 <div class="perfil-card">
     <div class="card-header">
-        <h3>🏠 Propiedades Vendidas</h3>
+        <h3> Propiedades Vendidas</h3>
     </div>
     <div class="card-body">
         <?php
@@ -179,7 +179,7 @@ if (!$usuario) {
                                 <td><span class="estado-venta estado-<?php echo strtolower($venta['estado']); ?>"><?php echo $venta['estado']; ?></span></td>
                                 <td>
                                     <a href="../controllers/ContratoController.php?action=generar&id=<?php echo $venta['contrato_id']; ?>" 
-                                       class="btn-ver-contrato" target="_blank">📄 Ver Contrato</a>
+                                       class="btn-ver-contrato" target="_blank"> Ver Contrato</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -202,7 +202,7 @@ if (!$usuario) {
 <div class="modal-overlay" id="modalEditarPerfil">
     <div class="modal-perfil">
         <div class="modal-header">
-            <h3>✏️ Editar perfil</h3>
+            <h3> Editar perfil</h3>
             <button class="modal-close" id="closeEditarPerfil">×</button>
         </div>
         <div class="modal-body">
@@ -229,7 +229,7 @@ if (!$usuario) {
 <div class="modal-overlay" id="modalCambiarPassword">
     <div class="modal-perfil">
         <div class="modal-header">
-            <h3>🔒 Cambiar contraseña</h3>
+            <h3> Cambiar contraseña</h3>
             <button class="modal-close" id="closeCambiarPassword">×</button>
         </div>
         <div class="modal-body">
@@ -256,7 +256,7 @@ if (!$usuario) {
 <div class="modal-overlay" id="modalCambiarFoto">
     <div class="modal-perfil">
         <div class="modal-header">
-            <h3>📷 Cambiar foto de perfil</h3>
+            <h3> Cambiar foto de perfil</h3>
             <button class="modal-close" id="closeCambiarFoto">×</button>
         </div>
         <div class="modal-body">
