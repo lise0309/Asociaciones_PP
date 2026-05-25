@@ -1,171 +1,110 @@
 /**
- * PERFIL JS - PP Bienes Raíces
+ * perfil.js — PP Bienes Raíces
  */
+'use strict';
 
-const API_URL = '../controllers/PerfilController.php';
+const API_PERFIL = '../controllers/PerfilController.php';
 
-function mostrarToast(mensaje, tipo = 'success') {
-    const container = document.getElementById('toastMessages');
-    if (!container) return;
-    
-    const toast = document.createElement('div');
-    toast.className = `toast-message toast-${tipo}`;
-    toast.innerHTML = `<span>${mensaje}</span>`;
-    
-    container.appendChild(toast);
-    setTimeout(() => toast.remove(), 3500);
+/* ── Toast ── */
+function toast(msg, tipo = 'ok') {
+    const wrap = document.getElementById('toastWrap');
+    if (!wrap) return;
+    const icon = tipo === 'ok' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+    const t = document.createElement('div');
+    t.className = `toast toast-${tipo}`;
+    t.innerHTML = `<i class="${icon}"></i><span>${msg}</span>`;
+    wrap.appendChild(t);
+    setTimeout(() => { t.classList.add('hide'); setTimeout(() => t.remove(), 280); }, 3500);
 }
 
-// ==================== EDITAR PERFIL ====================
-const btnEditarPerfil = document.getElementById('btnEditarPerfil');
-const modalEditarPerfil = document.getElementById('modalEditarPerfil');
-const closeEditarPerfil = document.getElementById('closeEditarPerfil');
-const formEditarPerfil = document.getElementById('formEditarPerfil');
+/* ── Abrir/cerrar modales ── */
+function abrirModal(id)  { document.getElementById(id).style.display = 'flex'; }
+function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
 
-btnEditarPerfil?.addEventListener('click', () => {
-    modalEditarPerfil.style.display = 'flex';
+// Cerrar al hacer click fuera
+document.querySelectorAll('.modal-pf-overlay').forEach(m => {
+    m.addEventListener('click', e => { if (e.target === m) m.style.display = 'none'; });
 });
 
-closeEditarPerfil?.addEventListener('click', () => {
-    modalEditarPerfil.style.display = 'none';
-});
+// Botones de apertura
+document.getElementById('btnEditarPerfil')?.addEventListener('click', () => abrirModal('modalEditarPerfil'));
+document.getElementById('btnCambiarPasswordModal')?.addEventListener('click', () => abrirModal('modalCambiarPassword'));
+document.getElementById('btnCambiarFoto')?.addEventListener('click', () => abrirModal('modalCambiarFoto'));
 
-modalEditarPerfil?.addEventListener('click', (e) => {
-    if (e.target === modalEditarPerfil) {
-        modalEditarPerfil.style.display = 'none';
-    }
-});
-
-formEditarPerfil?.addEventListener('submit', async (e) => {
+/* ── Editar perfil ── */
+document.getElementById('formEditarPerfil')?.addEventListener('submit', async e => {
     e.preventDefault();
-    
-    const data = {
-        nombre: document.getElementById('editNombre').value,
-        apellido: document.getElementById('editApellido').value,
-        telefono: document.getElementById('editTelefono').value
-    };
-    
+    const nombre   = document.getElementById('editNombre').value.trim();
+    const apellido = document.getElementById('editApellido').value.trim();
+    const telefono = document.getElementById('editTelefono').value.trim();
+
+    if (!nombre || !apellido) { toast('Nombre y apellido son requeridos', 'error'); return; }
+
     try {
-        const response = await fetch(`${API_URL}?accion=editar_perfil`, {
+        const res  = await fetch(`${API_PERFIL}?accion=editar_perfil`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify({ nombre, apellido, telefono }),
         });
-        const result = await response.json();
-        
-        if (result.success) {
-            document.getElementById('infoNombre').innerText = data.nombre;
-            document.getElementById('infoApellido').innerText = data.apellido;
-            document.getElementById('infoTelefono').innerText = data.telefono || 'No especificado';
-            document.getElementById('perfilNombre').innerText = `${data.nombre} ${data.apellido}`;
-            modalEditarPerfil.style.display = 'none';
-            mostrarToast('Perfil actualizado', 'success');
+        const data = await res.json();
+        if (data.success) {
+            // Actualizar DOM
+            document.getElementById('infoNombre').textContent   = nombre;
+            document.getElementById('infoApellido').textContent = apellido;
+            document.getElementById('infoTelefono').textContent = telefono || 'No especificado';
+            document.getElementById('perfilNombre').textContent = `${nombre} ${apellido}`;
+            cerrarModal('modalEditarPerfil');
+            toast('Perfil actualizado correctamente ✓', 'ok');
         } else {
-            mostrarToast(result.error || 'Error al actualizar', 'error');
+            toast(data.error || 'Error al actualizar', 'error');
         }
-    } catch (error) {
-        mostrarToast('Error de conexión', 'error');
-    }
+    } catch(err) { toast('Error de conexión', 'error'); }
 });
 
-// ==================== CAMBIAR CONTRASEÑA ====================
-const btnCambiarPassword = document.getElementById('btnCambiarPasswordModal');
-const modalCambiarPassword = document.getElementById('modalCambiarPassword');
-const closeCambiarPassword = document.getElementById('closeCambiarPassword');
-const formCambiarPassword = document.getElementById('formCambiarPasswordModal');
-
-btnCambiarPassword?.addEventListener('click', () => {
-    modalCambiarPassword.style.display = 'flex';
-});
-
-closeCambiarPassword?.addEventListener('click', () => {
-    modalCambiarPassword.style.display = 'none';
-});
-
-modalCambiarPassword?.addEventListener('click', (e) => {
-    if (e.target === modalCambiarPassword) {
-        modalCambiarPassword.style.display = 'none';
-    }
-});
-
-formCambiarPassword?.addEventListener('submit', async (e) => {
+/* ── Cambiar contraseña ── */
+document.getElementById('formCambiarPasswordModal')?.addEventListener('submit', async e => {
     e.preventDefault();
-    
-    const passwordActual = document.getElementById('passwordActualModal').value;
-    const nuevaPassword = document.getElementById('nuevaPasswordModal').value;
-    const confirmarPassword = document.getElementById('confirmarPasswordModal').value;
-    
-    if (nuevaPassword !== confirmarPassword) {
-        mostrarToast('Las contraseñas no coinciden', 'error');
-        return;
-    }
-    
-    if (nuevaPassword.length < 6) {
-        mostrarToast('Mínimo 6 caracteres', 'error');
-        return;
-    }
-    
-    const data = { password_actual: passwordActual, nueva_password: nuevaPassword };
-    
+    const actual    = document.getElementById('passwordActualModal').value;
+    const nueva     = document.getElementById('nuevaPasswordModal').value;
+    const confirmar = document.getElementById('confirmarPasswordModal').value;
+
+    if (nueva !== confirmar) { toast('Las contraseñas no coinciden', 'error'); return; }
+    if (nueva.length < 6)    { toast('Mínimo 6 caracteres', 'error'); return; }
+
     try {
-        const response = await fetch(`${API_URL}?accion=cambiar_password`, {
+        const res  = await fetch(`${API_PERFIL}?accion=cambiar_password`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify({ password_actual: actual, nueva_password: nueva }),
         });
-        const result = await response.json();
-        
-        if (result.success) {
-            formCambiarPassword.reset();
-            modalCambiarPassword.style.display = 'none';
-            mostrarToast('Contraseña actualizada', 'success');
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('formCambiarPasswordModal').reset();
+            cerrarModal('modalCambiarPassword');
+            toast('Contraseña actualizada correctamente ✓', 'ok');
         } else {
-            mostrarToast(result.error || 'Error', 'error');
+            toast(data.error || 'Contraseña actual incorrecta', 'error');
         }
-    } catch (error) {
-        mostrarToast('Error de conexión', 'error');
-    }
+    } catch(err) { toast('Error de conexión', 'error'); }
 });
 
-// ==================== CAMBIAR FOTO ====================
-const btnCambiarFoto = document.getElementById('btnCambiarFoto');
-const modalCambiarFoto = document.getElementById('modalCambiarFoto');
-const closeCambiarFoto = document.getElementById('closeCambiarFoto');
-const formCambiarFoto = document.getElementById('formCambiarFoto');
-
-btnCambiarFoto?.addEventListener('click', () => {
-    modalCambiarFoto.style.display = 'flex';
-});
-
-closeCambiarFoto?.addEventListener('click', () => {
-    modalCambiarFoto.style.display = 'none';
-});
-
-modalCambiarFoto?.addEventListener('click', (e) => {
-    if (e.target === modalCambiarFoto) {
-        modalCambiarFoto.style.display = 'none';
-    }
-});
-
-formCambiarFoto?.addEventListener('submit', async (e) => {
+/* ── Cambiar foto ── */
+document.getElementById('formCambiarFoto')?.addEventListener('submit', async e => {
     e.preventDefault();
-    
-    const formData = new FormData();
-    formData.append('foto', document.getElementById('fotoArchivo').files[0]);
-    
+    const archivo = document.getElementById('fotoArchivo').files[0];
+    if (!archivo) { toast('Selecciona una imagen', 'error'); return; }
+
+    const fd = new FormData();
+    fd.append('foto', archivo);
+
     try {
-        const response = await fetch(`${API_URL}?accion=cambiar_foto`, {
-            method: 'POST',
-            body: formData
-        });
-        const result = await response.json();
-        
-        if (result.success) {
-            location.reload();
+        const res  = await fetch(`${API_PERFIL}?accion=cambiar_foto`, { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) {
+            toast('Foto actualizada ✓', 'ok');
+            setTimeout(() => location.reload(), 800);
         } else {
-            mostrarToast(result.error || 'Error al subir foto', 'error');
+            toast(data.error || 'Error al subir foto', 'error');
         }
-    } catch (error) {
-        mostrarToast('Error de conexión', 'error');
-    }
+    } catch(err) { toast('Error de conexión', 'error'); }
 });
