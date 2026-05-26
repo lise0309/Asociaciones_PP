@@ -119,11 +119,7 @@ if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 <div class="toast-wrap" id="toastWrap"></div>
 
-<script>
-    var MODO = 'plantillas';
-    var ROL  = 'admin';
-</script>
 <script src="../assets/js/panel.js"></script>
-<script src="../assets/js/contratos.js"></script>
+<script src="../assets/js/plantillas.js"></script>
 </body>
 </html>

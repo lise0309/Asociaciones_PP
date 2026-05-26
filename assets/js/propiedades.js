@@ -9,7 +9,6 @@
 
   const API = '../controllers/propiedadController.php';
 
-  // ── Referencias ──
   const tablaBody      = document.getElementById('tablaBody');
   const subtitulo      = document.getElementById('subtituloTabla');
   const filtroBuscar   = document.getElementById('filtroBuscar');
@@ -17,27 +16,16 @@
   const filtroNegocio  = document.getElementById('filtroNegocio');
   const filtroEstado   = document.getElementById('filtroEstado');
 
-  // KPIs
   const kpiTotal      = document.getElementById('kpiTotal');
   const kpiActivas    = document.getElementById('kpiActivas');
   const kpiPendientes = document.getElementById('kpiPendientes');
   const kpiDestacadas = document.getElementById('kpiDestacadas');
 
-  // Modales
   const modalDetalleOverlay  = document.getElementById('modalDetalleOverlay');
   const modalEstadoOverlay   = document.getElementById('modalEstadoOverlay');
   const modalEliminarOverlay = document.getElementById('modalEliminarOverlay');
 
   let debounceTimer;
-
-  // Mapeo de colores por estado
-  const estadoColores = {
-    'Activa': '#10B981',
-    'Pendiente aprobación': '#F59E0B',
-    'Pausada': '#6B7280',
-    'Borrador': '#8B5CF6',
-    'Rechazada': '#EF4444'
-  };
 
   /* ════════════════════════════════════════
      CARGAR PROPIEDADES
@@ -46,32 +34,28 @@
     tablaBody.innerHTML = `
       <tr>
         <td colspan="9" class="tabla-loading">
-          <div class="loading-spinner"></div>
-          Cargando propiedades...
+          <div class="loading-spinner"></div> Cargando propiedades...
         </td>
       </tr>`;
 
     const params = new URLSearchParams();
     params.append('accion', 'listar');
-    
-    if (filtroBuscar?.value) params.append('buscar', filtroBuscar.value);
-    if (filtroTipo?.value) params.append('tipo_inmueble', filtroTipo.value);
-    if (filtroNegocio?.value) params.append('negocio', filtroNegocio.value);
-    if (filtroEstado?.value) params.append('estado', filtroEstado.value);
+    if (filtroBuscar?.value)   params.append('buscar',        filtroBuscar.value);
+    if (filtroTipo?.value)     params.append('tipo_inmueble', filtroTipo.value);
+    if (filtroNegocio?.value)  params.append('negocio',       filtroNegocio.value);
+    if (filtroEstado?.value)   params.append('estado',        filtroEstado.value);
 
     try {
-      const res = await fetch(`${API}?${params.toString()}`);
+      const res  = await fetch(`${API}?${params.toString()}`);
       const data = await res.json();
-
       if (!data.ok) throw new Error(data.msg || 'Error al cargar');
 
       const propiedades = data.propiedades || [];
-      const total = data.total || propiedades.length;
-      const kpis = data.kpis || {};
+      const total       = data.total || propiedades.length;
+      const kpis        = data.kpis  || {};
 
-      // Actualizar KPIs
-      if (kpiTotal) kpiTotal.textContent = kpis.total || total;
-      if (kpiActivas) kpiActivas.textContent = kpis.activas || 0;
+      if (kpiTotal)      kpiTotal.textContent      = kpis.total      || total;
+      if (kpiActivas)    kpiActivas.textContent    = kpis.activas    || 0;
       if (kpiPendientes) kpiPendientes.textContent = kpis.pendientes || 0;
       if (kpiDestacadas) kpiDestacadas.textContent = kpis.destacadas || 0;
 
@@ -79,14 +63,10 @@
 
       if (!propiedades.length) {
         tablaBody.innerHTML = `
-          <tr>
-            <td colspan="9" class="tabla-empty">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
-              </svg>
-              No se encontraron propiedades con esos filtros.
-            </td>
-          </tr>`;
+          <tr><td colspan="9" class="tabla-empty">
+            <i class="fas fa-home"></i>
+            <br>No se encontraron propiedades con esos filtros.
+          </td></tr>`;
         return;
       }
 
@@ -94,67 +74,58 @@
       bindAcciones();
 
     } catch (err) {
-      console.error('Error:', err);
       tablaBody.innerHTML = `
-        <tr><td colspan="9" class="tabla-empty">
-          Error: ${err.message}
-        </td></tr>`;
+        <tr><td colspan="9" class="tabla-empty">Error: ${err.message}</td></tr>`;
     }
   }
 
   /* ════════════════════════════════════════
-     RENDER FILA
+     RENDER FILA — solo diseño flat
   ════════════════════════════════════════ */
   function renderFila(p) {
-    const precio = `$${parseFloat(p.precio_pedido || 0).toLocaleString('en-US', { minimumFractionDigits: 0 })}`;
-    const estado = p.estado_publicacion || 'Sin estado';
-    const colorStyle = estadoColores[estado] ? `background:${estadoColores[estado]}20;color:${estadoColores[estado]};` : '';
-    
-    const foto = p.foto
-      ? `<img src="../${p.foto}" alt="" style="width:40px;height:40px;border-radius:8px;object-fit:cover;" onerror="this.parentNode.innerHTML='<div style=\\'width:40px;height:40px;border-radius:8px;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:1rem;\\'>🏠</div>'">`
-      : `<div style="width:40px;height:40px;border-radius:8px;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:1rem;">🏠</div>`;
+    const precio   = '$' + parseFloat(p.precio_pedido || 0).toLocaleString('en-US', { minimumFractionDigits: 0 });
+    const estado   = p.estado_publicacion || 'Sin estado';
 
-    const vendedor = p.vendedor || '—';
-    const correo = p.correo_vendedor || '—';
+    const foto = p.foto
+      ? `<img src="../${p.foto}" alt="" class="prop-foto-thumb-sm" onerror="this.parentNode.innerHTML='<div class=\'prop-foto-placeholder\'><i class=\'fas fa-home\'></i></div>'">`
+      : `<div class="prop-foto-placeholder"><i class="fas fa-home"></i></div>`;
 
     return `
       <tr>
-        <td style="min-width:260px;">
-          <div style="display:flex;align-items:center;gap:12px;">
+        <td>
+          <div style="display:flex;align-items:center;gap:10px;">
             ${foto}
             <div>
-              <div style="font-weight:600;font-size:.85rem;color:var(--navy);">${escapeHtml(p.titulo_anuncio || 'Sin título')}</div>
-              <div style="font-size:.72rem;color:var(--muted);">${escapeHtml(p.municipio || '')}, ${escapeHtml(p.departamento || '')}</div>
+              <div class="td-titulo">${esc(p.titulo_anuncio || 'Sin título')}</div>
+              <div class="td-tipo"><i class="fas fa-map-marker-alt" style="color:var(--gold-dark);margin-right:3px;font-size:.65rem;"></i>${esc(p.municipio || '')}, ${esc(p.departamento || '')}</div>
             </div>
           </div>
         </td>
-        <td style="font-size:.85rem;">${escapeHtml(p.tipo_inmueble || '—')}</td>
+        <td><span class="td-tipo">${esc(p.tipo_inmueble || '—')}</span></td>
+        <td><span class="negocio-tag">${esc(p.tipo_negocio || '—')}</span></td>
         <td>
-          <span class="badge ${p.tipo_negocio === 'Venta' ? 'badge-vendedor' : 'badge-activa'}">
-            ${escapeHtml(p.tipo_negocio || '—')}
-          </span>
+          <div class="td-vendedor">${esc(p.vendedor || '—')}</div>
+          <div class="td-tipo">${esc(p.correo_vendedor || '')}</div>
+        </td>
+        <td><span class="td-precio">${precio}</span></td>
+        <td><span class="td-loc"><i class="fas fa-map-marker-alt" style="color:var(--gold-dark);margin-right:3px;font-size:.65rem;"></i>${esc(p.departamento || '—')}</span></td>
+        <td><span class="badge-estado-prop">${esc(estado)}</span></td>
+        <td class="td-star">
+          <i class="fas fa-star ${p.es_anuncio_destacado == 1 ? 'star-on' : 'star-off'}"></i>
         </td>
         <td>
-          <div style="font-size:.85rem;font-weight:500;">${escapeHtml(vendedor)}</div>
-          <div style="font-size:.7rem;color:var(--muted);">${escapeHtml(correo)}</div>
-        </td>
-        <td style="font-weight:700;color:var(--navy);">${precio}</td>
-        <td style="font-size:.85rem;">${escapeHtml(p.departamento || '—')}</td>
-        <td>
-          <span class="badge" style="${colorStyle} padding:4px 12px; border-radius:20px; font-size:.75rem; font-weight:600;">
-            ${escapeHtml(estado)}
-          </span>
-        </td>
-        <td style="text-align:center;">
-          ${p.es_anuncio_destacado == 1 ? '<span style="color:var(--gold); font-size:1.1rem;">⭐</span>' : '—'}
-         </td>
-        <td>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            <button class="btn-panel btn-panel-outline btn-panel-sm btn-ver" data-id="${p.id}">Ver</button>
-            <button class="btn-panel btn-panel-primary btn-panel-sm btn-estado" data-id="${p.id}" data-titulo="${escapeHtml(p.titulo_anuncio)}">Estado</button>
-            <button class="btn-panel btn-panel-danger btn-panel-sm btn-eliminar" data-id="${p.id}" data-titulo="${escapeHtml(p.titulo_anuncio)}">Eliminar</button>
+          <div class="acciones-cell">
+            <button class="btn-prop-accion btn-ver btn-ver-prop" data-id="${p.id}" title="Ver detalle">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button class="btn-prop-accion btn-estado btn-estado-prop" data-id="${p.id}" data-titulo="${esc(p.titulo_anuncio)}" title="Cambiar estado">
+              <i class="fas fa-exchange-alt"></i>
+            </button>
+            <button class="btn-prop-accion btn-del btn-eliminar-prop" data-id="${p.id}" data-titulo="${esc(p.titulo_anuncio)}" title="Eliminar">
+              <i class="fas fa-trash"></i>
+            </button>
           </div>
-         </td>
+        </td>
       </tr>`;
   }
 
@@ -162,13 +133,13 @@
      BIND ACCIONES
   ════════════════════════════════════════ */
   function bindAcciones() {
-    tablaBody.querySelectorAll('.btn-ver').forEach(btn =>
+    tablaBody.querySelectorAll('.btn-ver-prop').forEach(btn =>
       btn.addEventListener('click', () => abrirDetalle(btn.dataset.id))
     );
-    tablaBody.querySelectorAll('.btn-estado').forEach(btn =>
+    tablaBody.querySelectorAll('.btn-estado-prop').forEach(btn =>
       btn.addEventListener('click', () => abrirModalEstado(btn.dataset.id, btn.dataset.titulo))
     );
-    tablaBody.querySelectorAll('.btn-eliminar').forEach(btn =>
+    tablaBody.querySelectorAll('.btn-eliminar-prop').forEach(btn =>
       btn.addEventListener('click', () => abrirModalEliminar(btn.dataset.id, btn.dataset.titulo))
     );
   }
@@ -177,133 +148,156 @@
      MODAL VER DETALLE
   ════════════════════════════════════════ */
   async function abrirDetalle(id) {
-    const body = document.getElementById('detalleBody');
+    const body   = document.getElementById('detalleBody');
     const titulo = document.getElementById('detalleTitulo');
-    body.innerHTML = '<div class="loading-spinner"></div>';
+    body.innerHTML = '<div style="text-align:center;padding:32px;"><div class="loading-spinner" style="margin:0 auto;"></div></div>';
     abrirModal(modalDetalleOverlay);
 
     try {
-      const res = await fetch(`${API}?accion=detalle&id=${id}`);
+      const res  = await fetch(`${API}?accion=detalle&id=${id}`);
       const data = await res.json();
-      
       if (!data.ok) throw new Error(data.msg);
 
-      const p = data.propiedad;
+      const p    = data.propiedad;
       const fotos = data.fotos || [];
-      
       titulo.textContent = p.titulo_anuncio || 'Detalle de propiedad';
 
-      const precio = new Intl.NumberFormat('es-SV', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(p.precio_pedido || 0);
-      
-      const estadoColor = estadoColores[p.estado_publicacion] || '#6B7280';
+      const precio = '$' + parseFloat(p.precio_pedido || 0).toLocaleString('en-US', { minimumFractionDigits: 0 });
 
       body.innerHTML = `
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
-          
+        <div class="prop-detalle-grid">
+
           <!-- Columna izquierda -->
           <div>
-            <div style="margin-bottom:24px;">
-              <h4 style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;border-left:3px solid var(--gold);padding-left:10px;">
-                📋 Información general
-              </h4>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                <div><span style="color:var(--muted);font-size:.8rem;">Tipo inmueble</span><br><strong>${escapeHtml(p.tipo_inmueble || '—')}</strong></div>
-                <div><span style="color:var(--muted);font-size:.8rem;">Tipo negocio</span><br><strong>${escapeHtml(p.tipo_negocio || '—')}</strong></div>
-                <div><span style="color:var(--muted);font-size:.8rem;">Precio</span><br><strong style="color:var(--navy);font-size:1.1rem;">${precio}</strong></div>
-                <div><span style="color:var(--muted);font-size:.8rem;">Estado</span><br><span style="display:inline-block;background:${estadoColor}20;color:${estadoColor};padding:4px 12px;border-radius:20px;font-size:.8rem;font-weight:600;">${escapeHtml(p.estado_publicacion || '—')}</span></div>
+            <div style="font-size:.62rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;border-left:3px solid var(--gold);padding-left:8px;margin-bottom:12px;">
+              <i class="fas fa-info-circle" style="color:var(--gold-dark);margin-right:5px;"></i>Información general
+            </div>
+            <div class="prop-detalle-grid" style="margin-bottom:16px;">
+              <div class="prop-detalle-item">
+                <div class="prop-detalle-label"><i class="fas fa-building"></i> Tipo inmueble</div>
+                <div class="prop-detalle-val">${esc(p.tipo_inmueble || '—')}</div>
+              </div>
+              <div class="prop-detalle-item">
+                <div class="prop-detalle-label"><i class="fas fa-handshake"></i> Negocio</div>
+                <div class="prop-detalle-val">${esc(p.tipo_negocio || '—')}</div>
+              </div>
+              <div class="prop-detalle-item">
+                <div class="prop-detalle-label"><i class="fas fa-dollar-sign"></i> Precio</div>
+                <div class="prop-detalle-val" style="font-family:var(--font-d);font-size:1.1rem;color:var(--navy);">${precio}</div>
+              </div>
+              <div class="prop-detalle-item">
+                <div class="prop-detalle-label"><i class="fas fa-tag"></i> Estado</div>
+                <div class="prop-detalle-val"><span class="badge-estado-prop">${esc(p.estado_publicacion || '—')}</span></div>
               </div>
             </div>
-            
-            <div style="margin-bottom:24px;">
-              <h4 style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;border-left:3px solid var(--gold);padding-left:10px;">
-                👤 Vendedor / Agente
-              </h4>
-              <div>
-                <div style="font-weight:600;margin-bottom:8px;">${escapeHtml(p.vendedor || '—')}</div>
-                <div style="font-size:.8rem;color:var(--muted);">📧 ${escapeHtml(p.correo_vendedor || '—')}</div>
-                <div style="font-size:.8rem;color:var(--muted);">📞 ${escapeHtml(p.telefono_vendedor || '—')}</div>
+
+            <div style="font-size:.62rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;border-left:3px solid var(--gold);padding-left:8px;margin-bottom:12px;">
+              <i class="fas fa-user-tie" style="color:var(--gold-dark);margin-right:5px;"></i>Vendedor
+            </div>
+            <div style="margin-bottom:16px;">
+              <div class="prop-detalle-val" style="margin-bottom:4px;">${esc(p.vendedor || '—')}</div>
+              <div class="td-tipo"><i class="fas fa-envelope" style="color:var(--gold-dark);margin-right:4px;"></i>${esc(p.correo_vendedor || '—')}</div>
+              <div class="td-tipo"><i class="fas fa-phone" style="color:var(--gold-dark);margin-right:4px;"></i>${esc(p.telefono_vendedor || '—')}</div>
+            </div>
+
+            <div style="font-size:.62rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;border-left:3px solid var(--gold);padding-left:8px;margin-bottom:12px;">
+              <i class="fas fa-map-marker-alt" style="color:var(--gold-dark);margin-right:5px;"></i>Ubicación
+            </div>
+            <div class="prop-detalle-grid" style="margin-bottom:16px;">
+              <div class="prop-detalle-item">
+                <div class="prop-detalle-label">Departamento</div>
+                <div class="prop-detalle-val">${esc(p.departamento || '—')}</div>
+              </div>
+              <div class="prop-detalle-item">
+                <div class="prop-detalle-label">Municipio</div>
+                <div class="prop-detalle-val">${esc(p.municipio || '—')}</div>
               </div>
             </div>
-            
-            <div style="margin-bottom:24px;">
-              <h4 style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;border-left:3px solid var(--gold);padding-left:10px;">
-                📍 Ubicación
-              </h4>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                <div><span style="color:var(--muted);font-size:.8rem;">Departamento</span><br><strong>${escapeHtml(p.departamento || '—')}</strong></div>
-                <div><span style="color:var(--muted);font-size:.8rem;">Municipio</span><br><strong>${escapeHtml(p.municipio || '—')}</strong></div>
-                <div><span style="color:var(--muted);font-size:.8rem;">Dirección</span><br><strong>${escapeHtml(p.direccion_exacta || '—')}</strong></div>
-              </div>
-            </div>
+            <div class="prop-detalle-desc">${esc(p.direccion_exacta || 'Sin dirección exacta')}</div>
           </div>
-          
+
           <!-- Columna derecha -->
           <div>
-            <div style="margin-bottom:24px;">
-              <h4 style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;border-left:3px solid var(--gold);padding-left:10px;">
-                🏠 Características
-              </h4>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                <div><span style="color:var(--muted);font-size:.8rem;">Habitaciones</span><br><strong>${p.num_habitaciones || '—'}</strong></div>
-                <div><span style="color:var(--muted);font-size:.8rem;">Baños</span><br><strong>${p.num_banos || '—'}</strong></div>
-                <div><span style="color:var(--muted);font-size:.8rem;">Metros construcción</span><br><strong>${p.metros_construccion ? p.metros_construccion.toLocaleString() + ' m²' : '—'}</strong></div>
-                <div><span style="color:var(--muted);font-size:.8rem;">Metros terreno</span><br><strong>${p.metros_terreno ? p.metros_terreno.toLocaleString() + ' m²' : '—'}</strong></div>
+            <div style="font-size:.62rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;border-left:3px solid var(--gold);padding-left:8px;margin-bottom:12px;">
+              <i class="fas fa-home" style="color:var(--gold-dark);margin-right:5px;"></i>Características
+            </div>
+            <div class="prop-detalle-grid" style="margin-bottom:16px;">
+              <div class="prop-detalle-item">
+                <div class="prop-detalle-label"><i class="fas fa-bed"></i> Habitaciones</div>
+                <div class="prop-detalle-val">${p.num_habitaciones || '—'}</div>
+              </div>
+              <div class="prop-detalle-item">
+                <div class="prop-detalle-label"><i class="fas fa-bath"></i> Baños</div>
+                <div class="prop-detalle-val">${p.num_banos || '—'}</div>
+              </div>
+              <div class="prop-detalle-item">
+                <div class="prop-detalle-label"><i class="fas fa-ruler-combined"></i> Construcción</div>
+                <div class="prop-detalle-val">${p.metros_construccion ? p.metros_construccion + ' m²' : '—'}</div>
+              </div>
+              <div class="prop-detalle-item">
+                <div class="prop-detalle-label"><i class="fas fa-expand"></i> Terreno</div>
+                <div class="prop-detalle-val">${p.metros_terreno ? p.metros_terreno + ' m²' : '—'}</div>
+              </div>
+              <div class="prop-detalle-item">
+                <div class="prop-detalle-label"><i class="fas fa-car"></i> Estacionamiento</div>
+                <div class="prop-detalle-val">${p.tiene_estacionamiento == 1 ? '<i class="fas fa-check" style="color:var(--gold-dark);"></i> Sí' : 'No'}</div>
+              </div>
+              <div class="prop-detalle-item">
+                <div class="prop-detalle-label"><i class="fas fa-swimming-pool"></i> Piscina</div>
+                <div class="prop-detalle-val">${p.tiene_piscina == 1 ? '<i class="fas fa-check" style="color:var(--gold-dark);"></i> Sí' : 'No'}</div>
               </div>
             </div>
-            
-            <div style="margin-bottom:24px;">
-              <h4 style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;border-left:3px solid var(--gold);padding-left:10px;">
-                📝 Descripción
-              </h4>
-              <div style="background:var(--off);padding:16px;border-radius:12px;font-size:.85rem;line-height:1.7;color:var(--text);max-height:200px;overflow-y:auto;">
-                ${escapeHtml(p.descripcion_detallada || 'Sin descripción disponible.')}
-              </div>
+
+            ${p.descripcion_detallada ? `
+            <div style="font-size:.62rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;border-left:3px solid var(--gold);padding-left:8px;margin-bottom:12px;">
+              <i class="fas fa-align-left" style="color:var(--gold-dark);margin-right:5px;"></i>Descripción
             </div>
-            
-            <div>
-              <h4 style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;border-left:3px solid var(--gold);padding-left:10px;">
-                📸 Fotos (${fotos.length})
-              </h4>
-              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
-                ${fotos.length ? fotos.slice(0, 6).map(f => `
-                  <div style="aspect-ratio:1;background:var(--off);border-radius:8px;overflow:hidden;cursor:pointer;" onclick="window.open('../${escapeHtml(f.url_foto_original)}', '_blank')">
-                    <img src="../${escapeHtml(f.url_foto_miniatura || f.url_foto_original)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentNode.innerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;\\'>📷</div>'">
-                  </div>
-                `).join('') : '<p style="color:var(--muted);font-size:.8rem;">Sin fotos disponibles</p>'}
-              </div>
+            <div class="prop-detalle-desc" style="margin-bottom:16px;">${esc(p.descripcion_detallada)}</div>
+            ` : ''}
+
+            <div style="font-size:.62rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;border-left:3px solid var(--gold);padding-left:8px;margin-bottom:12px;">
+              <i class="fas fa-images" style="color:var(--gold-dark);margin-right:5px;"></i>Fotos (${fotos.length})
+            </div>
+            <div class="prop-fotos-grid">
+              ${fotos.length
+                ? fotos.slice(0, 6).map(f => `
+                    <img src="../${esc(f.url_foto_miniatura || f.url_foto_original)}"
+                         class="prop-foto-thumb"
+                         onclick="window.open('../${esc(f.url_foto_original)}','_blank')"
+                         onerror="this.style.display='none'">`).join('')
+                : '<p class="td-tipo">Sin fotos disponibles</p>'
+              }
             </div>
           </div>
-          
-        </div>
-      `;
+
+        </div>`;
 
     } catch (err) {
-      console.error('Error en detalle:', err);
-      body.innerHTML = `<p style="color:var(--red);">Error: ${err.message}</p>`;
+      body.innerHTML = `<p style="color:#ef4444;padding:16px;">Error: ${err.message}</p>`;
     }
   }
 
   document.getElementById('modalDetalleCerrar')?.addEventListener('click', () => cerrarModal(modalDetalleOverlay));
-  document.getElementById('btnCerrarDetalle')?.addEventListener('click', () => cerrarModal(modalDetalleOverlay));
+  document.getElementById('btnCerrarDetalle')?.addEventListener('click',   () => cerrarModal(modalDetalleOverlay));
   modalDetalleOverlay?.addEventListener('click', e => { if (e.target === modalDetalleOverlay) cerrarModal(modalDetalleOverlay); });
 
   /* ════════════════════════════════════════
      MODAL CAMBIAR ESTADO
   ════════════════════════════════════════ */
   async function abrirModalEstado(id, titulo) {
-    document.getElementById('propiedadEstadoId').value = id;
-    document.getElementById('propiedadEstadoNombre').textContent = titulo;
+    document.getElementById('propiedadEstadoId').value            = id;
+    document.getElementById('propiedadEstadoNombre').textContent  = titulo;
 
     const select = document.getElementById('selectNuevoEstado');
     select.innerHTML = '<option value="">Cargando...</option>';
     abrirModal(modalEstadoOverlay);
 
     try {
-      const res = await fetch(`${API}?accion=estados`);
+      const res  = await fetch(`${API}?accion=estados`);
       const data = await res.json();
       if (data.ok) {
         select.innerHTML = '<option value="">Seleccionar estado...</option>' +
-          data.estados.map(e => `<option value="${e.id}">${escapeHtml(e.nombre_opcion)}</option>`).join('');
+          data.estados.map(e => `<option value="${e.id}">${esc(e.nombre_opcion)}</option>`).join('');
       } else {
         select.innerHTML = '<option value="">Error al cargar</option>';
       }
@@ -313,24 +307,20 @@
   }
 
   document.getElementById('btnConfirmarEstado')?.addEventListener('click', async () => {
-    const id = document.getElementById('propiedadEstadoId').value;
+    const id       = document.getElementById('propiedadEstadoId').value;
     const estadoId = document.getElementById('selectNuevoEstado').value;
-
     if (!estadoId) { toast('Selecciona un estado.', 'error'); return; }
 
-    const formData = new FormData();
-    formData.append('id', id);
-    formData.append('estado_id', estadoId);
+    const fd = new FormData();
+    fd.append('id', id); fd.append('estado_id', estadoId);
 
     try {
-      const res = await fetch(`${API}?accion=estado`, { method: 'POST', body: formData });
+      const res  = await fetch(`${API}?accion=estado`, { method: 'POST', body: fd });
       const data = await res.json();
       cerrarModal(modalEstadoOverlay);
       toast(data.msg, data.ok ? 'ok' : 'error');
       if (data.ok) cargar();
-    } catch (err) {
-      toast('Error al cambiar estado', 'error');
-    }
+    } catch { toast('Error al cambiar estado', 'error'); }
   });
 
   document.getElementById('btnCancelarEstado')?.addEventListener('click', () => cerrarModal(modalEstadoOverlay));
@@ -341,25 +331,22 @@
      MODAL ELIMINAR
   ════════════════════════════════════════ */
   function abrirModalEliminar(id, titulo) {
-    document.getElementById('idEliminar').value = id;
+    document.getElementById('idEliminar').value           = id;
     document.getElementById('nombreEliminar').textContent = titulo;
     abrirModal(modalEliminarOverlay);
   }
 
   document.getElementById('btnConfirmarEliminar')?.addEventListener('click', async () => {
     const id = document.getElementById('idEliminar').value;
-    const formData = new FormData();
-    formData.append('id', id);
+    const fd = new FormData(); fd.append('id', id);
 
     try {
-      const res = await fetch(`${API}?accion=eliminar`, { method: 'POST', body: formData });
+      const res  = await fetch(`${API}?accion=eliminar`, { method: 'POST', body: fd });
       const data = await res.json();
       cerrarModal(modalEliminarOverlay);
       toast(data.msg, data.ok ? 'ok' : 'error');
       if (data.ok) cargar();
-    } catch (err) {
-      toast('Error al eliminar', 'error');
-    }
+    } catch { toast('Error al eliminar', 'error'); }
   });
 
   document.getElementById('btnCancelarEliminar')?.addEventListener('click', () => cerrarModal(modalEliminarOverlay));
@@ -369,34 +356,23 @@
   /* ════════════════════════════════════════
      HELPERS
   ════════════════════════════════════════ */
-  function abrirModal(overlay) { overlay?.classList.add('open'); }
+  function abrirModal(overlay)  { overlay?.classList.add('open'); }
   function cerrarModal(overlay) { overlay?.classList.remove('open'); }
 
-  function escapeHtml(str) {
+  function esc(str) {
     if (!str) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
   function toast(msg, tipo = 'ok') {
     const wrap = document.getElementById('toastWrap');
     if (!wrap) return;
-    
-    const icono = tipo === 'ok'
-      ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/></svg>`
-      : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>`;
-
+    const icon = tipo === 'ok' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
     const t = document.createElement('div');
     t.className = `toast toast-${tipo}`;
-    t.innerHTML = `${icono}<span>${msg}</span>`;
+    t.innerHTML = `<i class="${icon}"></i><span>${msg}</span>`;
     wrap.appendChild(t);
-    setTimeout(() => {
-      t.style.opacity = '0';
-      setTimeout(() => t.remove(), 300);
-    }, 3000);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
   }
 
   function debounce(fn) {
@@ -407,9 +383,19 @@
   /* ════════════════════════════════════════
      EVENT LISTENERS
   ════════════════════════════════════════ */
-  filtroBuscar?.addEventListener('input', () => debounce(cargar));
-  filtroTipo?.addEventListener('change', cargar);
-  filtroNegocio?.addEventListener('change', cargar);
+  document.getElementById('btnFiltrar')?.addEventListener('click', cargar);
+  document.getElementById('btnRefresh')?.addEventListener('click', cargar);
+  document.getElementById('btnLimpiar')?.addEventListener('click', () => {
+    if (filtroBuscar)  filtroBuscar.value  = '';
+    if (filtroTipo)    filtroTipo.value    = '';
+    if (filtroNegocio) filtroNegocio.value = '';
+    if (filtroEstado)  filtroEstado.value  = '';
+    cargar();
+  });
+
+  filtroBuscar?.addEventListener('input',  () => debounce(cargar));
+  filtroTipo?.addEventListener('change',   cargar);
+  filtroNegocio?.addEventListener('change',cargar);
   filtroEstado?.addEventListener('change', cargar);
 
   document.addEventListener('keydown', e => {
@@ -420,7 +406,6 @@
     }
   });
 
-  // Inicializar
   cargar();
 
 })();

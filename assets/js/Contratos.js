@@ -1,15 +1,12 @@
 /**
  * contratos.js — PP Bienes Raíces
- * Contratos + Plantillas
+ * Lógica de contratos — cargar en contratos.php y contratosadmin.php
  */
 'use strict';
 
-var MODO = window.MODO || 'contratos';
-var ROL  = window.ROL  || 'vendedor';
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (MODO === 'plantillas') initPlantillas();
-    else initContratos();
+    initContratos();
 });
 
 /* ══════════════════════════════════════
@@ -308,122 +305,6 @@ function cerrarModal() {
     document.removeEventListener('keydown', onEscModal);
 }
 function onEscModal(e) { if (e.key === 'Escape') cerrarModal(); }
-
-/* ══════════════════════════════════════
-   PLANTILLAS
-══════════════════════════════════════ */
-function initPlantillas() {
-    cargarPlantillas();
-    const area  = document.getElementById('uploadArea');
-    const input = document.getElementById('plantillaInput');
-    area?.addEventListener('click', () => input?.click());
-    area?.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('drag-over'); });
-    area?.addEventListener('dragleave', () => area.classList.remove('drag-over'));
-    area?.addEventListener('drop', e => {
-        e.preventDefault(); area.classList.remove('drag-over');
-        const file = e.dataTransfer.files[0];
-        if (file) { input.files = e.dataTransfer.files; mostrarArchivoSeleccionado(file.name); }
-    });
-    input?.addEventListener('change', e => {
-        if (e.target.files[0]) mostrarArchivoSeleccionado(e.target.files[0].name);
-    });
-    document.getElementById('formPlantilla')?.addEventListener('submit', async e => {
-        e.preventDefault();
-        const btn = document.getElementById('btnSubir');
-        btn.disabled = true;
-        const fd = new FormData(e.target);
-        fd.append('accion', 'subir');
-        try {
-            const res  = await fetch('../controllers/plantillacontroller.php?action=subir', { method:'POST', body:fd });
-            const data = await res.json();
-            toast(data.ok ? 'Plantilla subida correctamente' : data.msg, data.ok?'ok':'error');
-            if (data.ok) { e.target.reset(); resetUploadArea(); cargarPlantillas(); }
-        } catch(err) { toast('Error de conexión','error'); }
-        finally { btn.disabled = false; }
-    });
-}
-function mostrarArchivoSeleccionado(nombre) {
-    const area = document.getElementById('uploadArea');
-    if (!area) return;
-    area.classList.add('has-file');
-    area.querySelector('p').textContent = nombre;
-}
-function resetUploadArea() {
-    const area = document.getElementById('uploadArea');
-    if (!area) return;
-    area.classList.remove('has-file');
-    area.querySelector('p').textContent = 'Haz clic o arrastra aquí';
-}
-async function cargarPlantillas() {
-    const el = document.getElementById('listaPlantillas');
-    if (!el) return;
-    el.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div>Cargando...</div>';
-    try {
-        const res  = await fetch('../controllers/plantillacontroller.php?action=listar');
-        const data = await res.json();
-        if (!data.ok || !data.plantillas?.length) {
-            el.innerHTML = '<div class="empty-state"><i class="fas fa-copy"></i><p>No hay plantillas subidas aún.</p></div>';
-            return;
-        }
-        el.innerHTML = data.plantillas.map(p => {
-            const fecha  = new Date(p.fecha_creacion).toLocaleDateString('es-SV',{day:'2-digit',month:'short',year:'numeric'});
-            const activa = p.plantilla_activa == 1;
-            return `
-            <div class="plantilla-item">
-                <div class="plantilla-ico"><i class="fas fa-file-word"></i></div>
-                <div class="plantilla-info">
-                    <div class="plantilla-nombre" title="${esc(p.nombre_plantilla)}">${esc(p.nombre_plantilla)}</div>
-                    <div class="plantilla-fecha"><i class="fas fa-calendar-alt"></i> ${fecha}</div>
-                </div>
-                <span class="plantilla-badge ${activa?'badge-activa':'badge-inactiva'}">${activa?'Activa':'Inactiva'}</span>
-                <div style="display:flex;gap:6px;margin-left:8px;">
-                    <button class="btn-sm btn-ver" onclick="togglePlantilla('${p.id}')" title="${activa?'Desactivar':'Activar'}">${activa?'⏸':'▶'}</button>
-                    <button class="btn-sm btn-eliminar" onclick="eliminarPlantilla('${p.id}','${esc(p.nombre_plantilla)}')">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>`;
-        }).join('');
-    } catch(e) { el.innerHTML = '<div class="empty-state">Error al cargar plantillas</div>'; }
-}
-async function togglePlantilla(id) {
-    const fd = new FormData(); fd.append('id',id); fd.append('accion','toggle');
-    const res  = await fetch('../controllers/plantillacontroller.php?action=toggle',{method:'POST',body:fd});
-    const data = await res.json();
-    if (data.ok) cargarPlantillas();
-}
-async function eliminarPlantilla(id, nombre) {
-    const confirmado = await modalConfirmar(`¿Eliminar la plantilla "<strong>${nombre}</strong>"?<br><small style="color:#6B7280;">Esta acción no se puede deshacer.</small>`, 'Eliminar', '#ef4444');
-    if (!confirmado) return;
-    try {
-        const res  = await fetch(`../controllers/plantillacontroller.php?action=eliminar&id=${id}`);
-        const data = await res.json();
-        toast(data.ok ? 'Plantilla eliminada' : (data.msg || 'Error'), data.ok ? 'ok' : 'error');
-        if (data.ok) cargarPlantillas();
-    } catch(e) { toast('Error de conexión', 'error'); }
-}
-
-/* ══════════════════════════════════════
-   MODAL CONFIRMACIÓN
-══════════════════════════════════════ */
-function modalConfirmar(mensaje, btnTexto = 'Confirmar', btnColor = '#ef4444') {
-    return new Promise(resolve => {
-        const overlay = document.createElement('div');
-        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,15,46,.55);backdrop-filter:blur(4px);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;';
-        overlay.innerHTML = `
-            <div class="modal-confirm-box">
-                <div class="modal-confirm-body">${mensaje}</div>
-                <div class="modal-confirm-footer">
-                    <button id="btnCancelarConfirm" class="modal-confirm-cancel">Cancelar</button>
-                    <button id="btnAceptarConfirm" class="modal-confirm-ok" style="background:${btnColor};">${btnTexto}</button>
-                </div>
-            </div>`;
-        document.body.appendChild(overlay);
-        overlay.querySelector('#btnAceptarConfirm').addEventListener('click', () => { overlay.remove(); resolve(true); });
-        overlay.querySelector('#btnCancelarConfirm').addEventListener('click', () => { overlay.remove(); resolve(false); });
-        overlay.addEventListener('click', e => { if (e.target === overlay) { overlay.remove(); resolve(false); } });
-    });
-}
 
 /* ══════════════════════════════════════
    HELPERS
