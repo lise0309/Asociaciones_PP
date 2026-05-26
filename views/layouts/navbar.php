@@ -11,7 +11,7 @@ $paginaActual = basename($phpSelf);
 
     <a href="/Asociaciones_PP/index.php" class="nav-logo">
       <div class="nav-logo-premium">
-        <img src="/Asociaciones_PP/assets/img/Logo.jpeg" alt="PP Bienes Raíces" class="nav-logo-img">
+        <img src="/Asociaciones_PP/assets/img/Logo.png" alt="PP Bienes Raíces" class="nav-logo-img">
         <div class="nav-logo-glow"></div>
       </div>
       <div class="nav-logo-text">

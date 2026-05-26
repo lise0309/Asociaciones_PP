@@ -62,7 +62,7 @@ if ($rol === 'admin') {
     <!-- ── LOGO ── -->
     <div class="sidebar-logo">
         <a href="<?= $rol === 'admin' ? 'dashboardadmin.php' : 'dashboardvendedor.php' ?>">
-            <img src="../assets/img/Logo.jpeg" alt="PP Bienes Raíces" class="sidebar-logo-img">
+            <img src="../assets/img/Logo.png" alt="PP Bienes Raíces" class="sidebar-logo-img">
         </a>
     </div>
 

@@ -39,19 +39,26 @@
 .kpi-sub-down { color:#ef4444; }
 
 /* ── Bienvenida vendedor flat ── */
-.bienvenida {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:18px 22px; background:var(--navy);
-  border-bottom:3px solid var(--gold);
-  margin-bottom:6px; gap:16px; flex-wrap:wrap;
-  border-radius:0;
+.bienvenida, .dash-bienvenida {
+  display:flex !important; align-items:center !important; justify-content:space-between !important;
+  padding:18px 22px !important; background:var(--navy) !important;
+  border-bottom:3px solid var(--gold) !important;
+  margin-bottom:6px !important; gap:16px !important; flex-wrap:wrap !important;
+  border-radius:0 !important;
 }
-.bienvenida-texto h2 {
-  font-family:var(--font-d); font-size:1.4rem; font-weight:800;
-  color:var(--white); margin:0 0 4px;
+.bienvenida-texto h2,
+.dash-bienvenida h2,
+.dash-bienvenida-texto h2 {
+  font-family:var(--font-d) !important; font-size:1.4rem !important; font-weight:800 !important;
+  color:var(--white) !important; margin:0 0 4px !important;
 }
-.bienvenida-texto h2 em { font-style:italic; color:var(--gold); }
-.bienvenida-texto p { font-size:.8rem; color:rgba(255,255,255,.5); margin:0; }
+.bienvenida-texto h2 em,
+.dash-bienvenida h2 em,
+.dash-bienvenida-texto h2 em { font-style:italic !important; color:var(--gold) !important; }
+
+.bienvenida-texto p,
+.dash-bienvenida p,
+.dash-bienvenida-texto p { font-size:.8rem !important; color:rgba(255,255,255,.5) !important; margin:0 !important; }
 
 .btn-panel-gold {
   display:inline-flex; align-items:center; gap:7px;

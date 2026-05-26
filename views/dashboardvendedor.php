@@ -96,9 +96,9 @@ $mis_contratos = $mis_contratos->fetchAll(PDO::FETCH_ASSOC);
 
             <!-- Bienvenida -->
             <div class="dash-bienvenida">
-                <div>
+                <div class="dash-bienvenida-texto">
                     <h2>Bienvenido, <em><?= htmlspecialchars($_SESSION['nombre'] ?? '') ?></em></h2>
-                    <p>Aquí tienes un resumen de tu actividad.</p>
+                    <p><i class="fas fa-chart-line" style="color:var(--gold);margin-right:5px;"></i>Aquí tienes un resumen de tu actividad.</p>
                 </div>
                 <a href="propiedad_form.php" class="dash-btn-nueva">
                     <i class="fas fa-plus"></i> Nueva propiedad

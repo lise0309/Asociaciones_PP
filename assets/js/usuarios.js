@@ -355,21 +355,12 @@
   // ════════════════════════════════════════
   function toast(msg, tipo = 'ok') {
     const wrap = document.getElementById('toastWrap');
-    const icono = tipo === 'ok'
-      ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/></svg>`
-      : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>`;
-
+    const icon = tipo === 'ok' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
     const t = document.createElement('div');
     t.className = `toast toast-${tipo}`;
-    t.innerHTML = `${icono}<span>${msg}</span>`;
+    t.innerHTML = `<i class="${icon}"></i><span>${msg}</span>`;
     wrap.appendChild(t);
-
-    setTimeout(() => {
-      t.style.transition = 'opacity .4s ease, transform .4s ease';
-      t.style.opacity    = '0';
-      t.style.transform  = 'translateX(10px)';
-      setTimeout(() => t.remove(), 400);
-    }, 3500);
+    setTimeout(() => { t.classList.add('hide'); setTimeout(() => t.remove(), 280); }, 3500);
   }
 
   // ════════════════════════════════════════
