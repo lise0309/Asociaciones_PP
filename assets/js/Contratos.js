@@ -208,6 +208,34 @@ async function cambiarEstadoPorNombre(contratoId, nombreEstado, motivo = '') {
 }
 
 /* ── VER CONTRATO ── */
+function firmaSeccionHtml(cid) {
+    var html  = '';
+    html += '<div class="firma-seccion" id="firmaSeccion_' + cid + '">';
+    html += '<div class="firma-header">';
+    html += '<i class="fas fa-pen-nib"></i> Firma electrónica ';
+    html += '<span class="firma-sub">El contrato está aprobado — pendiente de firma</span>';
+    html += '</div>';
+    html += '<div class="firma-estado-wrap" id="firmaEstado_' + cid + '">';
+    html += '<div class="firma-loading"><i class="fas fa-spinner fa-spin"></i> Cargando estado de firmas...</div>';
+    html += '</div>';
+    html += '<div class="firma-canvas-wrap" id="firmaCanvasWrap_' + cid + '" style="display:none;">';
+    html += '<div class="firma-info-row">';
+    html += '<div class="firma-fg"><label>NOMBRE DEL FIRMANTE</label>';
+    html += '<input type="text" id="firmaNombre_' + cid + '" class="firma-input" placeholder="Nombre completo"></div>';
+    html += '<div class="firma-fg"><label>CORREO</label>';
+    html += '<input type="text" id="firmaCorreo_' + cid + '" class="firma-input" placeholder="correo@ejemplo.com"></div>';
+    html += '</div>';
+    html += '<div class="firma-label-row"><label>FIRMA AQU&Iacute;</label>';
+    html += '<button onclick="limpiarCanvas(this.dataset.id)" data-id="' + cid + '" class="firma-btn-limpiar">';
+    html += '<i class="fas fa-eraser"></i> Limpiar</button></div>';
+    html += '<canvas id="firmaCanvas_' + cid + '" class="firma-canvas" width="600" height="180"></canvas>';
+    html += '<button class="firma-btn-guardar" onclick="guardarFirma(this.dataset.id, ROL)" data-id="' + cid + '">';
+    html += '<i class="fas fa-pen-nib"></i> Registrar mi firma</button>';
+    html += '</div>';
+    html += '</div>';
+    return html;
+}
+
 async function verContrato(id) {
     cerrarModal();
     const modal = crearModal('Detalle del contrato', '<div style="text-align:center;padding:32px;color:#6B7280;"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i></div>');
@@ -239,6 +267,7 @@ async function verContrato(id) {
                 ${c.archivo_generado ? `<tr><td><i class="fas fa-file-word"></i> Documento</td><td><span style="color:#16a34a;font-weight:700;"><i class="fas fa-check-circle"></i> Generado</span></td></tr>` : ''}
             </table>
 
+            ${c.estado_nombre === 'Aprobado' ? firmaSeccionHtml(c.id) : ''}
 
             <div class="modal-footer-btns">
                 <button class="modal-btn-cerrar" onclick="cerrarModal()"><i class="fas fa-times"></i> Cerrar</button>
@@ -250,9 +279,175 @@ async function verContrato(id) {
     } catch(e) {
         modal.querySelector('.modal-body').innerHTML = '<p style="color:red">Error al cargar</p>';
     }
+
+    // Cargar estado de firmas si el contrato está Aprobado
+    setTimeout(() => {
+        const seccion = document.getElementById(`firmaSeccion_${id}`);
+        if (seccion) cargarEstadoFirmas(id);
+    }, 100);
 }
 
 
+
+/* ── FIRMAS ELECTRÓNICAS ── */
+
+async function cargarEstadoFirmas(contratoId) {
+    const wrap = document.getElementById(`firmaEstado_${contratoId}`);
+    const canvasWrap = document.getElementById(`firmaCanvasWrap_${contratoId}`);
+    if (!wrap) return;
+
+    try {
+        const res  = await fetch(`../controllers/firmacontroller.php?action=estado&contrato_id=${contratoId}`);
+        const data = await res.json();
+        if (!data.ok) return;
+
+        const fV = data.firmas.find(f => f.rol === 'Vendedor');
+        const fC = data.firmas.find(f => f.rol === 'Comprador');
+
+        let html = '<div class="firma-estados">';
+        html += `<div class="firma-status ${fV ? 'firmado' : 'pendiente'}">
+            <i class="fas fa-${fV ? 'check-circle' : 'clock'}"></i>
+            <div>
+                <div class="fs-label">Vendedor</div>
+                <div class="fs-val">${fV ? esc(fV.nombre_firmante) + ' · ' + new Date(fV.fecha_firma).toLocaleDateString('es-SV') : 'Pendiente de firma'}</div>
+            </div>
+            ${fV ? `<img src="${fV.imagen_firma}" class="firma-img-preview" title="Ver firma">` : ''}
+        </div>`;
+        html += `<div class="firma-status ${fC ? 'firmado' : 'pendiente'}">
+            <i class="fas fa-${fC ? 'check-circle' : 'clock'}"></i>
+            <div>
+                <div class="fs-label">Comprador</div>
+                <div class="fs-val">${fC ? esc(fC.nombre_firmante) + ' · ' + new Date(fC.fecha_firma).toLocaleDateString('es-SV') : 'Pendiente de firma'}</div>
+            </div>
+            ${fC ? `<img src="${fC.imagen_firma}" class="firma-img-preview" title="Ver firma">` : ''}
+        </div>`;
+        html += '</div>';
+
+        if (data.completo) {
+            html += '<div class="firma-completo"><i class="fas fa-check-double"></i> Contrato firmado por ambas partes — propiedad marcada como Vendida</div>';
+            if (canvasWrap) canvasWrap.style.display = 'none';
+        } else {
+            // Determinar si el usuario actual ya firmó
+            const rolActual = ROL === 'admin' ? 'Vendedor' : 'Vendedor'; // vendedor siempre firma como Vendedor
+            const yaFirmo = ROL === 'vendedor' ? !!fV : false;
+            if (!yaFirmo && canvasWrap) {
+                canvasWrap.style.display = 'block';
+                // Pre-llenar datos del usuario
+                const inputNombre = document.getElementById(`firmaNombre_${contratoId}`);
+                const inputCorreo = document.getElementById(`firmaCorreo_${contratoId}`);
+                if (inputNombre && !inputNombre.value) inputNombre.value = '';
+                initCanvas(contratoId);
+            }
+        }
+        wrap.innerHTML = html;
+    } catch(e) {
+        wrap.innerHTML = '<div style="color:#ef4444;font-size:.8rem;">Error al cargar estado de firmas</div>';
+    }
+}
+
+// Inicializar canvas de firma
+function initCanvas(contratoId) {
+    const canvas = document.getElementById(`firmaCanvas_${contratoId}`);
+    if (!canvas || canvas._init) return;
+    canvas._init = true;
+    const ctx = canvas.getContext('2d');
+    let dibujando = false, lastX = 0, lastY = 0;
+
+    ctx.strokeStyle = '#1A1953';
+    ctx.lineWidth   = 2.5;
+    ctx.lineCap     = 'round';
+    ctx.lineJoin    = 'round';
+
+    function getPos(e, canvas) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const src = e.touches ? e.touches[0] : e;
+        return {
+            x: (src.clientX - rect.left) * scaleX,
+            y: (src.clientY - rect.top)  * scaleY
+        };
+    }
+
+    canvas.addEventListener('mousedown',  e => { dibujando = true; const p = getPos(e,canvas); lastX=p.x; lastY=p.y; });
+    canvas.addEventListener('mousemove',  e => {
+        if (!dibujando) return;
+        const p = getPos(e,canvas);
+        ctx.beginPath(); ctx.moveTo(lastX,lastY); ctx.lineTo(p.x,p.y); ctx.stroke();
+        lastX=p.x; lastY=p.y;
+    });
+    canvas.addEventListener('mouseup',   () => dibujando = false);
+    canvas.addEventListener('mouseleave',() => dibujando = false);
+
+    canvas.addEventListener('touchstart', e => { e.preventDefault(); dibujando = true; const p = getPos(e,canvas); lastX=p.x; lastY=p.y; }, {passive:false});
+    canvas.addEventListener('touchmove',  e => {
+        e.preventDefault();
+        if (!dibujando) return;
+        const p = getPos(e,canvas);
+        ctx.beginPath(); ctx.moveTo(lastX,lastY); ctx.lineTo(p.x,p.y); ctx.stroke();
+        lastX=p.x; lastY=p.y;
+    }, {passive:false});
+    canvas.addEventListener('touchend', () => dibujando = false);
+}
+
+function limpiarCanvas(contratoId) {
+    const canvas = document.getElementById(`firmaCanvas_${contratoId}`);
+    if (!canvas) return;
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function canvasVacio(canvas) {
+    const data = canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
+    for (let i=3; i<data.length; i+=4) { if (data[i] > 0) return false; }
+    return true;
+}
+
+async function guardarFirma(contratoId, rolUsuario) {
+    const canvas  = document.getElementById(`firmaCanvas_${contratoId}`);
+    const nombre  = document.getElementById(`firmaNombre_${contratoId}`)?.value?.trim();
+    const correo  = document.getElementById(`firmaCorreo_${contratoId}`)?.value?.trim();
+
+    if (!nombre) { toast('Ingresa el nombre del firmante', 'error'); return; }
+    if (!correo) { toast('Ingresa el correo del firmante', 'error'); return; }
+    if (canvasVacio(canvas)) { toast('Dibuja tu firma en el recuadro', 'error'); return; }
+
+    // Determinar rol firmante
+    const rolFirma = rolUsuario === 'admin' ? 'Comprador' : 'Vendedor';
+
+    const imagenB64 = canvas.toDataURL('image/png');
+    const fd = new FormData();
+    fd.append('contrato_id',   contratoId);
+    fd.append('imagen_firma',  imagenB64);
+    fd.append('rol_firma',     rolFirma);
+    fd.append('nombre_firmante', nombre);
+    fd.append('correo_firmante', correo);
+
+    const btn = document.querySelector(`#firmaCanvasWrap_${contratoId} .firma-btn-guardar`);
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...'; }
+
+    try {
+        const res  = await fetch('../controllers/firmacontroller.php?action=firmar', { method:'POST', body:fd });
+        const data = await res.json();
+
+        if (data.ok) {
+            toast('Firma registrada correctamente ✓', 'ok');
+            if (data.ambos_firmaron) {
+                toast('¡Contrato firmado por ambas partes! Propiedad marcada como Vendida.', 'ok');
+                setTimeout(() => { cerrarModal(); cargarContratos(); }, 1500);
+            } else {
+                cargarEstadoFirmas(contratoId);
+                const cw = document.getElementById(`firmaCanvasWrap_${contratoId}`);
+                if (cw) cw.style.display = 'none';
+            }
+        } else {
+            toast(data.msg || 'Error al guardar firma', 'error');
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-pen-nib"></i> Registrar mi firma'; }
+        }
+    } catch(e) {
+        toast('Error de conexión', 'error');
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-pen-nib"></i> Registrar mi firma'; }
+    }
+}
 
 /* ── GENERAR DOCUMENTO ── */
 function generarDocumento(contratoId) {

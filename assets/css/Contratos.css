@@ -251,41 +251,6 @@
 }
 .alert-info a { color:var(--navy); font-weight:700; text-decoration:underline; }
 
-/* ── Upload area ── */
-.upload-area {
-  border:2px dashed var(--border);
-  padding:28px 20px; text-align:center;
-  cursor:pointer; transition:all var(--t);
-  background:var(--off);
-}
-.upload-area:hover, .upload-area.drag-over { border-color:var(--gold); background:var(--gold-soft); }
-.upload-area i { font-size:2rem; color:var(--muted); display:block; margin:0 auto 8px; }
-.upload-area p { font-size:.875rem; color:var(--navy); font-weight:600; margin:0 0 4px; }
-.upload-area small { font-size:.75rem; color:var(--muted); }
-.upload-area.has-file { border-color:var(--navy); background:var(--navy-soft); }
-.upload-area.has-file i { color:var(--navy); }
-
-/* ── Plantilla items ── */
-.plantilla-item {
-  display:flex; align-items:center; gap:14px;
-  padding:14px 18px; border-bottom:1px solid var(--border);
-  transition:background var(--t);
-}
-.plantilla-item:last-child { border-bottom:none; }
-.plantilla-item:hover { background:var(--navy-soft); }
-.plantilla-ico {
-  width:40px; height:40px; background:var(--navy);
-  display:flex; align-items:center; justify-content:center; flex-shrink:0;
-  color:var(--gold); font-size:1.1rem;
-}
-.plantilla-info { flex:1; min-width:0; }
-.plantilla-nombre { font-weight:700; font-size:.875rem; color:var(--navy); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.plantilla-fecha { font-size:.72rem; color:var(--muted); margin-top:2px; }
-.plantilla-fecha i { margin-right:4px; }
-.plantilla-badge { font-size:.62rem; font-weight:800; padding:3px 9px; text-transform:uppercase; }
-.badge-activa   { background:rgba(22,163,74,.12); color:#16a34a; border-left:2px solid #16a34a; }
-.badge-inactiva { background:var(--border); color:var(--muted); }
-
 /* ── Modal contrato ── */
 .modal-contrato-box {
   background:var(--white);
@@ -742,3 +707,121 @@ tr.tr-pendiente:hover { background:rgba(255,212,90,.1) !important; }
     color:var(--navy);
 }
 .td-acciones { display:flex; gap:5px; flex-wrap:nowrap; }
+
+/* ════════════════════════════════════════
+   FIRMA ELECTRÓNICA — dentro del modal
+════════════════════════════════════════ */
+.firma-seccion {
+  margin-top:16px;
+  border-top:2px solid var(--gold);
+  padding-top:14px;
+}
+.firma-header {
+  display:flex; align-items:center; gap:8px;
+  font-size:.72rem; font-weight:800;
+  text-transform:uppercase; letter-spacing:.1em;
+  color:var(--navy); margin-bottom:12px;
+}
+.firma-header i { color:var(--gold-dark); font-size:.9rem; }
+.firma-sub {
+  font-size:.68rem; font-weight:500;
+  color:var(--muted); text-transform:none; letter-spacing:0;
+  margin-left:4px;
+}
+
+/* Estado firmas */
+.firma-estados {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:8px; margin-bottom:12px;
+}
+.firma-status {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px; border:1.5px solid var(--border);
+  background:var(--off);
+}
+.firma-status.firmado {
+  border-color:var(--navy); background:var(--navy-soft);
+}
+.firma-status.pendiente {
+  border-color:var(--border); background:rgba(26,25,83,.02);
+}
+.firma-status > i {
+  font-size:1.2rem; flex-shrink:0;
+}
+.firma-status.firmado > i { color:var(--gold-dark); }
+.firma-status.pendiente > i { color:var(--border); }
+.fs-label {
+  font-size:.58rem; font-weight:800;
+  text-transform:uppercase; letter-spacing:.08em; color:var(--muted);
+}
+.fs-val { font-size:.75rem; font-weight:600; color:var(--navy); margin-top:2px; }
+.firma-img-preview {
+  width:60px; height:30px; object-fit:contain;
+  border:1px solid var(--border); margin-left:auto;
+  background:var(--white);
+}
+.firma-loading {
+  font-size:.8rem; color:var(--muted);
+  padding:10px 0; display:flex; align-items:center; gap:8px;
+}
+.firma-completo {
+  background:var(--navy); color:var(--gold);
+  padding:10px 14px; font-size:.78rem; font-weight:700;
+  display:flex; align-items:center; gap:8px;
+  margin-top:8px;
+}
+.firma-completo i { font-size:.9rem; }
+
+/* Canvas firma */
+.firma-canvas-wrap { margin-top:10px; }
+.firma-info-row {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:10px; margin-bottom:10px;
+}
+.firma-fg { display:flex; flex-direction:column; gap:4px; }
+.firma-fg label {
+  font-size:.58rem; font-weight:800;
+  color:var(--navy); text-transform:uppercase; letter-spacing:.08em;
+}
+.firma-input {
+  padding:7px 10px; border:1.5px solid var(--border);
+  font-family:var(--font-b); font-size:.82rem; color:var(--text);
+  outline:none; transition:border-color var(--t); width:100%;
+}
+.firma-input:focus { border-color:var(--navy); }
+
+.firma-label-row {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:6px;
+}
+.firma-label-row label {
+  font-size:.6rem; font-weight:800;
+  color:var(--navy); text-transform:uppercase; letter-spacing:.08em;
+}
+.firma-btn-limpiar {
+  padding:4px 10px; background:transparent; color:var(--muted);
+  border:1.5px solid var(--border); font-family:var(--font-b);
+  font-size:.65rem; font-weight:700; cursor:pointer;
+  transition:all var(--t); display:inline-flex; align-items:center; gap:4px;
+}
+.firma-btn-limpiar:hover { border-color:var(--navy); color:var(--navy); }
+
+.firma-canvas {
+  width:100%; height:180px; display:block;
+  border:2px solid var(--navy); background:var(--white);
+  cursor:crosshair; touch-action:none;
+}
+.firma-canvas:hover { border-color:var(--gold-dark); }
+
+.firma-btn-guardar {
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  width:100%; padding:10px; margin-top:8px;
+  background:var(--navy); color:var(--gold);
+  border:none; font-family:var(--font-b); font-size:.78rem; font-weight:800;
+  text-transform:uppercase; letter-spacing:.06em;
+  cursor:pointer; transition:all var(--t);
+  box-shadow:3px 3px 0 rgba(0,0,0,.2);
+}
+.firma-btn-guardar:hover { background:var(--navy-mid); transform:translate(-1px,-1px); box-shadow:4px 4px 0 rgba(0,0,0,.25); }
+.firma-btn-guardar:disabled { opacity:.6; pointer-events:none; }
+.firma-btn-guardar i { font-size:.82rem; }

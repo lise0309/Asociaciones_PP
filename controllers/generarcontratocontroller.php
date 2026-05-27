@@ -145,6 +145,8 @@ for ($i = 0; $i < $zip->numFiles; $i++) {
 
     // Reemplazar todas las variables
     foreach ($variables as $var => $valor) {
+        // Saltar variables de firma — se insertan como imagen después
+        if (strpos($valor, '###FIRMA_IMG###') === 0) continue;
         $valorEsc = htmlspecialchars((string)$valor, ENT_XML1 | ENT_QUOTES, 'UTF-8');
         $xml = str_replace($var, $valorEsc, $xml);
     }
@@ -152,6 +154,9 @@ for ($i = 0; $i < $zip->numFiles; $i++) {
     $zip->addFromString($nombre, $xml);
 }
 $zip->close();
+
+// ── Insertar imágenes de firma en el DOCX ──────────────────
+insertarImagenesFirma($tmpFile, $variables);
 
 // ── Guardar en servidor + actualizar BD ──────────────────────
 try {
@@ -187,6 +192,113 @@ header('Cache-Control: no-cache');
 readfile($tmpFile);
 @unlink($tmpFile);
 exit;
+
+/* ══════════════════════════════════════════════════════════════
+   INSERTAR IMÁGENES DE FIRMA EN EL DOCX
+══════════════════════════════════════════════════════════════ */
+function insertarImagenesFirma(string $docxPath, array $variables): void {
+    $marcadores = [];
+    foreach ($variables as $var => $valor) {
+        if (strpos($valor, '###FIRMA_IMG###') === 0) {
+            // Extraer ruta e imagen
+            $partes = explode('###', $valor);
+            // $partes[1] = ruta, $partes[2] = nombre
+            $marcadores[$var] = ['ruta' => $partes[1] ?? '', 'nombre' => $partes[2] ?? ''];
+        }
+    }
+    if (empty($marcadores)) return;
+    // Si llegamos aquí, hay firmas para insertar
+
+    $zip = new ZipArchive();
+    if ($zip->open($docxPath) !== true) return;
+
+    $xmlDoc = $zip->getFromName('word/document.xml');
+    $xmlDoc = desfragmentarVariables($xmlDoc); // Asegurar que {{firma_imagen_*}} no estén fragmentados
+    $xmlRels = $zip->getFromName('word/_rels/document.xml.rels') ?: '';
+
+    $rIdCounter = 100; // Empezar en rId100 para no colisionar
+
+    foreach ($marcadores as $var => $info) {
+        $rutaImg = $info['ruta'];
+        $nombre  = $info['nombre'];
+
+        if (!file_exists($rutaImg)) {
+            // Si no hay imagen, reemplazar con nombre
+            $xmlDoc = str_replace(
+                htmlspecialchars($var, ENT_XML1),
+                htmlspecialchars($nombre),
+                $xmlDoc
+            );
+            $xmlDoc = str_replace($var, htmlspecialchars($nombre), $xmlDoc);
+            continue;
+        }
+
+        // Leer imagen y obtener dimensiones
+        $imgData = file_get_contents($rutaImg);
+        $size    = getimagesize($rutaImg);
+        $w_px    = $size[0] ?? 200;
+        $h_px    = $size[1] ?? 60;
+
+        // Escalar a máx 200x60 píxeles manteniendo proporción
+        $maxW = 200; $maxH = 60;
+        $ratio = min($maxW / $w_px, $maxH / $h_px);
+        $w_emu = (int)($w_px * $ratio * 9525); // 1px = 9525 EMU
+        $h_emu = (int)($h_px * $ratio * 9525);
+
+        // Agregar imagen al ZIP
+        $imgNombre = 'word/media/firma_' . $rIdCounter . '.png';
+        $rId = 'rId' . $rIdCounter;
+        $zip->addFromString($imgNombre, $imgData);
+
+        // Agregar relación
+        $relXml = '<Relationship Id="' . $rId . '" '
+            . 'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" '
+            . 'Target="media/firma_' . $rIdCounter . '.png"/>';
+
+        // Insertar en .rels
+        $xmlRels = str_replace('</Relationships>', $relXml . '</Relationships>', $xmlRels);
+
+        // XML de imagen inline para Word
+        $imgXml = '<w:r><w:rPr/><w:drawing>'
+            . '<wp:inline distT="0" distB="0" distL="0" distR="0"'
+            . ' xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">'
+            . '<wp:extent cx="' . $w_emu . '" cy="' . $h_emu . '"/>'
+            . '<wp:effectExtent l="0" t="0" r="0" b="0"/>'
+            . '<wp:docPr id="' . $rIdCounter . '" name="firma_' . $rIdCounter . '"/>'
+            . '<wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr>'
+            . '<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">'
+            . '<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">'
+            . '<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">'
+            . '<pic:nvPicPr>'
+            . '<pic:cNvPr id="' . $rIdCounter . '" name="firma_' . $rIdCounter . '"/>'
+            . '<pic:cNvPicPr><a:picLocks noChangeAspect="1" noChangeArrowheads="1"/></pic:cNvPicPr>'
+            . '</pic:nvPicPr>'
+            . '<pic:blipFill>'
+            . '<a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="' . $rId . '"/>'
+            . '<a:stretch><a:fillRect/></a:stretch>'
+            . '</pic:blipFill>'
+            . '<pic:spPr bwMode="auto">'
+            . '<a:xfrm><a:off x="0" y="0"/><a:ext cx="' . $w_emu . '" cy="' . $h_emu . '"/></a:xfrm>'
+            . '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>'
+            . '<a:noFill/>'
+            . '</pic:spPr>'
+            . '</pic:pic></a:graphicData></a:graphic>'
+            . '</wp:inline></w:drawing></w:r>';
+
+        // Reemplazar el placeholder en el XML del documento
+        // El placeholder está dentro de un <w:t> tag
+        $placeholder = htmlspecialchars($var, ENT_XML1);
+        $xmlDoc = str_replace($placeholder, $imgXml, $xmlDoc);
+        $xmlDoc = str_replace($var, $imgXml, $xmlDoc);
+
+        $rIdCounter++;
+    }
+
+    // Guardar cambios
+    $zip->addFromString('word/document.xml', $xmlDoc);
+    if ($xmlRels) $zip->addFromString('word/_rels/document.xml.rels', $xmlRels);
+    $zip->close();
+}
 
 /* ══════════════════════════════════════════════════════════════
    DESFRAGMENTAR VARIABLES
@@ -239,4 +351,53 @@ function numeroAPalabras(float $num): string {
         return $base . ($r ? ' '.numeroAPalabras($r) : '');
     }
     return number_format($entero,0,'.',',');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   OBTENER XML DE IMAGEN DE FIRMA PARA INSERTAR EN DOCX
+   Retorna el texto alternativo si no hay firma, o el XML de imagen
+══════════════════════════════════════════════════════════════ */
+function obtenerXmlFirma(PDO $db, string $contratoId, string $rol): string {
+    try {
+        $stmt = $db->prepare("
+            SELECT f.imagen_firma, f.nombre_firmante
+            FROM firmas_contrato f
+            JOIN opciones_sistema os ON os.id = f.rol_firmante_id
+            WHERE f.contrato_id = :cid
+              AND os.nombre_opcion = :rol
+              AND f.imagen_firma IS NOT NULL
+            LIMIT 1
+        ");
+        $stmt->execute([':cid' => $contratoId, ':rol' => $rol]);
+        $firma = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$firma || empty($firma['imagen_firma'])) {
+            return '_________________________ (' . $rol . ' — Pendiente)';
+        }
+
+        // Ruta física de la imagen
+        // imagen_firma viene como /Asociaciones_PP/uploads/firmas/...
+        // DOCUMENT_ROOT = C:/wamp/www  → ruta completa = DOCUMENT_ROOT + imagen_firma
+        $rutaImg = $_SERVER['DOCUMENT_ROOT'] . $firma['imagen_firma'];
+        // Fallback: si no existe, intentar con raiz del proyecto
+        if (!file_exists($rutaImg)) {
+            $raiz    = dirname(__DIR__);
+            $rutaImg = $raiz . '/' . ltrim($firma['imagen_firma'], '/');
+        }
+        // Fallback 2: quitar doble /Asociaciones_PP/
+        if (!file_exists($rutaImg)) {
+            $rutaImg = $_SERVER['DOCUMENT_ROOT'] . preg_replace('#^/Asociaciones_PP#', '', $firma['imagen_firma']);
+        }
+
+        if (!file_exists($rutaImg)) {
+            return htmlspecialchars($firma['nombre_firmante'] ?? $rol);
+        }
+
+        // Retornar nombre + indicador — la imagen se inserta via relación Word
+        // Para insertar imagen real en docx necesitamos la ruta para el ZIP
+        // Guardamos la ruta en un marcador especial que procesamos después
+        return '###FIRMA_IMG###' . $rutaImg . '###' . htmlspecialchars($firma['nombre_firmante'] ?? $rol) . '###';
+    } catch (Exception $e) {
+        return '_________________________ (' . $rol . ')';
+    }
 }
