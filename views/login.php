@@ -152,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <div class="panel-content">
 
         <a href="../index.php" class="panel-logo">
-          <img src="../assets/img/Logo.jpeg" alt="PP Bienes Raíces">
+          <img src="../assets/img/Logo.png" alt="PP Bienes Raíces">
         </a>
 
         <div class="panel-texto">

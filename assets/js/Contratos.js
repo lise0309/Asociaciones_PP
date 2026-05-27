@@ -323,3 +323,26 @@ function toast(msg, tipo='ok') {
     wrap.appendChild(t);
     setTimeout(() => { t.classList.add('hide'); setTimeout(()=>t.remove(),280); }, 3500);
 }
+/* ── Modal confirmación flat ── */
+function modalConfirmar(mensaje, btnTexto = 'Confirmar', btnColor = '#1A1953') {
+    return new Promise(resolve => {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,15,46,.65);backdrop-filter:blur(4px);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;';
+        overlay.innerHTML = `
+            <div style="background:#FFFCFB;width:100%;max-width:400px;box-shadow:6px 6px 0 rgba(0,0,0,.25);">
+                <div style="padding:14px 18px;background:#1A1953;border-bottom:2px solid #FFD45A;display:flex;align-items:center;gap:8px;">
+                    <i class="fas fa-exclamation-triangle" style="color:#FFD45A;font-size:.9rem;"></i>
+                    <span style="font-size:.72rem;font-weight:800;color:#FFD45A;text-transform:uppercase;letter-spacing:.1em;">Confirmar acción</span>
+                </div>
+                <div style="padding:20px 18px;font-size:.875rem;color:#1C1C2E;line-height:1.6;border-left:4px solid #1A1953;">${mensaje}</div>
+                <div style="padding:12px 18px 16px;display:flex;gap:8px;justify-content:flex-end;border-top:1px solid #CECCDF;">
+                    <button id="btnNo"  style="padding:8px 18px;background:transparent;border:1.5px solid #CECCDF;font-family:Inter,sans-serif;font-size:.75rem;font-weight:800;cursor:pointer;color:#5f6292;text-transform:uppercase;letter-spacing:.06em;">Cancelar</button>
+                    <button id="btnSi"  style="padding:8px 18px;background:${btnColor};color:#FFD45A;border:none;font-family:Inter,sans-serif;font-size:.75rem;font-weight:800;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;box-shadow:3px 3px 0 rgba(0,0,0,.2);">${btnTexto}</button>
+                </div>
+            </div>`;
+        document.body.appendChild(overlay);
+        overlay.querySelector('#btnSi').addEventListener('click', () => { overlay.remove(); resolve(true); });
+        overlay.querySelector('#btnNo').addEventListener('click', () => { overlay.remove(); resolve(false); });
+        overlay.addEventListener('click', e => { if (e.target === overlay) { overlay.remove(); resolve(false); } });
+    });
+}
