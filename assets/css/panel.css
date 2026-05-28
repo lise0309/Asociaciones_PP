@@ -111,13 +111,13 @@ img { max-width: 100%; height: auto; display: block; }
 .sidebar-logo {
   padding: 20px 20px 14px;
   border-bottom: 1px solid rgba(255,255,255,.07);
+  background: var(--navy);
 }
 .sidebar-logo a { display: block; }
 .sidebar-logo-img {
   height: 72px; width: auto;
   object-fit: contain;
   transition: opacity var(--t), transform var(--t);
-  filter: drop-shadow(0 2px 8px rgba(255,212,90,.15));
 }
 .sidebar-logo-img:hover { opacity: .88; transform: scale(1.02); }
 
