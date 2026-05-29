@@ -71,12 +71,45 @@ class ContratoModel {
         $stmt->execute($params);
         return $stmt->fetchAll();
     }
-
-    public function getById(string $id): ?array {
-        $stmt=$this->db->prepare("SELECT c.*,p.titulo_anuncio,p.departamento,p.municipio,pc.nombre_plantilla,pc.archivo_plantilla,ot.nombre_opcion AS tipo_nombre,oe.nombre_opcion AS estado_nombre,CONCAT(u.nombre,' ',u.apellido) AS vendedor_nombre,u.correo AS vendedor_correo,u.telefono AS vendedor_telefono FROM contratos c JOIN propiedades p ON p.id=c.propiedad_id JOIN plantillas_contrato pc ON pc.id=c.plantilla_id JOIN opciones_sistema ot ON ot.id=c.tipo_contrato_id JOIN opciones_sistema oe ON oe.id=c.estado_contrato_id JOIN usuarios u ON u.id=c.vendedor_id WHERE c.id=:id LIMIT 1");
-        $stmt->execute([':id'=>$id]);
-        return $stmt->fetch()?:null;
+public function getById(string $id): ?array {
+    $stmt = $this->db->prepare("
+        SELECT 
+            c.*,
+            p.titulo_anuncio,
+            p.departamento,
+            p.municipio,
+            p.direccion_exacta,
+            p.metros_terreno,
+            pc.nombre_plantilla,
+            pc.archivo_plantilla,
+            ot.nombre_opcion AS tipo_nombre,
+            oe.nombre_opcion AS estado_nombre,
+            CONCAT(u.nombre, ' ', u.apellido) AS vendedor_nombre,
+            u.correo AS vendedor_correo,
+            u.telefono AS vendedor_telefono
+        FROM contratos c 
+        JOIN propiedades p ON p.id = c.propiedad_id 
+        JOIN plantillas_contrato pc ON pc.id = c.plantilla_id 
+        JOIN opciones_sistema ot ON ot.id = c.tipo_contrato_id 
+        JOIN opciones_sistema oe ON oe.id = c.estado_contrato_id 
+        JOIN usuarios u ON u.id = c.vendedor_id 
+        WHERE c.id = :id 
+        LIMIT 1
+    ");
+    $stmt->execute([':id' => $id]);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // Agregar valores por defecto para los campos que no existen en la BD
+    if ($result) {
+        $result['matricula_inmueble'] = $result['matricula_inmueble'] ?? 'POR DETERMINAR';
+        $result['colindancia_norte'] = $result['colindancia_norte'] ?? 'POR DETERMINAR';
+        $result['colindancia_sur'] = $result['colindancia_sur'] ?? 'POR DETERMINAR';
+        $result['colindancia_oriente'] = $result['colindancia_oriente'] ?? 'POR DETERMINAR';
+        $result['colindancia_poniente'] = $result['colindancia_poniente'] ?? 'POR DETERMINAR';
     }
+    
+    return $result;
+}
 
     public function eliminar(string $id, string $vendedorId): bool {
         $c=$this->getById($id);
