@@ -4,10 +4,25 @@ if (!isset($_SESSION['usuario_id'])) { header('Location: login.php'); exit; }
 $rol = $_SESSION['rol'] ?? 'vendedor';
 require_once __DIR__ . '/../config/database.php';
 $db = Database::conectar();
+// Obtener el ID del estado "Vendida"
+$estadoVendida = $db->query("SELECT id FROM opciones_sistema WHERE categoria='estado_publicacion' AND nombre_opcion='Vendida' LIMIT 1")->fetchColumn();
+
 if ($rol === 'admin') {
-    $propiedades = $db->query("SELECT id, titulo_anuncio FROM propiedades ORDER BY titulo_anuncio")->fetchAll();
+    // Excluir propiedades vendidas
+    $sql = "SELECT id, titulo_anuncio FROM propiedades";
+    if ($estadoVendida) {
+        $sql .= " WHERE estado_publicacion_id != $estadoVendida OR estado_publicacion_id IS NULL";
+    }
+    $sql .= " ORDER BY titulo_anuncio";
+    $propiedades = $db->query($sql)->fetchAll();
 } else {
-    $stmt = $db->prepare("SELECT id, titulo_anuncio FROM propiedades WHERE vendedor_id=? ORDER BY titulo_anuncio");
+    // Excluir propiedades vendidas del vendedor
+    $sql = "SELECT id, titulo_anuncio FROM propiedades WHERE vendedor_id = ?";
+    if ($estadoVendida) {
+        $sql .= " AND (estado_publicacion_id != $estadoVendida OR estado_publicacion_id IS NULL)";
+    }
+    $sql .= " ORDER BY titulo_anuncio";
+    $stmt = $db->prepare($sql);
     $stmt->execute([$_SESSION['usuario_id']]);
     $propiedades = $stmt->fetchAll();
 }

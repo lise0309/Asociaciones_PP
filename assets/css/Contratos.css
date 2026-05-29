@@ -825,3 +825,31 @@ tr.tr-pendiente:hover { background:rgba(255,212,90,.1) !important; }
 .firma-btn-guardar:hover { background:var(--navy-mid); transform:translate(-1px,-1px); box-shadow:4px 4px 0 rgba(0,0,0,.25); }
 .firma-btn-guardar:disabled { opacity:.6; pointer-events:none; }
 .firma-btn-guardar i { font-size:.82rem; }
+
+/* ============================================
+   CONTRATOS VENDIDOS - ESTILO DORADO
+   ============================================ */
+.contrato-item.vendido {
+    background: linear-gradient(135deg, #fff8e7 0%, #fff4d4 100%);
+    border-left: 4px solid #d4af37;
+    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.15);
+}
+
+.contrato-item.vendido .ci-badge {
+    background: linear-gradient(135deg, #d4af37, #b8960c);
+    color: #fff;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.contrato-item.vendido .ci-num {
+    color: #b8960c;
+    background: #fff8e7;
+    border: 1px solid #d4af37;
+}
+
+.contrato-item.vendido:hover {
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.25);
+    transform: translateY(-2px);
+}

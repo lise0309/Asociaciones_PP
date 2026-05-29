@@ -1,15 +1,6 @@
 /**
  * contratos.js — PP Bienes Raíces
  * Lógica de contratos — cargar en contratos.php y contratosadmin.php
- *
- * CORRECCIONES APLICADAS:
- *  1. rolActual y yaFirmo calculados correctamente según ROL del usuario:
- *       - vendedor  → firma como 'Vendedor'
- *       - admin     → firma como 'Comprador'  (o el admin puede no firmar)
- *  2. yaFirmo verifica el estado real de la firma del rol correspondiente.
- *  3. Canvas de firma siempre inicializado correctamente al abrir el panel.
- *  4. initCanvas protegido contra doble inicialización con flag _init.
- *  5. Rol de firma enviado correctamente al controller.
  */
 'use strict';
 
@@ -17,9 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initContratos();
 });
 
-/* ══════════════════════════════════════
-   CONTRATOS — INICIALIZACIÓN
-══════════════════════════════════════ */
 function initContratos() {
     cargarContratos();
     document.getElementById('btnRefresh')?.addEventListener('click', cargarContratos);
@@ -53,9 +41,6 @@ function initContratos() {
     });
 }
 
-/* ══════════════════════════════════════
-   LISTAR CONTRATOS
-══════════════════════════════════════ */
 async function cargarContratos() {
     const el = document.getElementById('listaContratos');
     if (!el) return;
@@ -82,8 +67,10 @@ async function cargarContratos() {
             const num       = c.id.substring(0, 8).toUpperCase();
             const estado    = c.estado_nombre || '';
             const esAnulado = estado === 'Anulado';
+            const esFirmado = estado === 'Firmado';
+            const cardClass = esFirmado ? 'contrato-item vendido' : 'contrato-item';
+            const badgeText = esFirmado ? 'VENDIDA' : esc(estado);
 
-            // ── Botones del flujo según ROL y ESTADO ──
             let botonesFlujjo = '';
             if (ROL === 'vendedor' && estado === 'Borrador') {
                 botonesFlujjo = `<button class="btn-sm btn-enviar" onclick="enviarAlAdmin('${c.id}')">
@@ -107,10 +94,10 @@ async function cargarContratos() {
             }
 
             return `
-            <article class="contrato-item">
+            <article class="${cardClass}">
                 <div class="ci-head">
                     <span class="ci-num">#${num}</span>
-                    <span class="ci-badge">${esc(estado)}</span>
+                    <span class="ci-badge">${badgeText}</span>
                     <span class="ci-fecha">${fecha}</span>
                 </div>
                 <div class="ci-body">
@@ -128,7 +115,7 @@ async function cargarContratos() {
                         <i class="fas fa-download"></i> Descargar
                     </button>
                     ${botonesFlujjo}
-                    ${!esAnulado && (estado === 'Borrador' || estado === 'Rechazado') ? `
+                    ${!esAnulado && (estado === 'Borrador' || estado === 'Rechazado') && !esFirmado ? `
                     <button class="btn-sm btn-eliminar" onclick="eliminarContrato('${c.id}','${esc(estado)}')">
                         <i class="fas fa-trash"></i> ${estado === 'Borrador' ? 'Eliminar' : 'Anular'}
                     </button>` : ''}
@@ -152,9 +139,6 @@ function actualizarKpis(contratos) {
     if (document.getElementById('kpiMonto'))    document.getElementById('kpiMonto').textContent    = '$' + monto.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
 
-/* ══════════════════════════════════════
-   FLUJO DE APROBACIÓN
-══════════════════════════════════════ */
 async function enviarAlAdmin(id) {
     const ok = await modalConfirmar('¿Enviar este contrato al administrador para revisión?', 'Enviar', '#1A1953');
     if (!ok) return;
@@ -218,11 +202,6 @@ async function cambiarEstadoPorNombre(contratoId, nombreEstado, motivo = '') {
     }
 }
 
-/* ══════════════════════════════════════
-   VER CONTRATO — MODAL
-══════════════════════════════════════ */
-
-/** Genera el HTML de la sección de firma electrónica con pestañas dibujar/subir */
 function firmaSeccionHtml(cid) {
     return `
     <div class="firma-seccion" id="firmaSeccion_${cid}">
@@ -234,8 +213,6 @@ function firmaSeccionHtml(cid) {
             <div class="firma-loading"><i class="fas fa-spinner fa-spin"></i> Cargando estado de firmas...</div>
         </div>
         <div class="firma-canvas-wrap" id="firmaCanvasWrap_${cid}" style="display:none;">
-
-            <!-- Datos del firmante -->
             <div class="firma-info-row">
                 <div class="firma-fg">
                     <label>NOMBRE DEL FIRMANTE</label>
@@ -246,8 +223,6 @@ function firmaSeccionHtml(cid) {
                     <input type="text" id="firmaCorreo_${cid}" class="firma-input" placeholder="correo@ejemplo.com">
                 </div>
             </div>
-
-            <!-- Pestañas de modo -->
             <div class="firma-tabs">
                 <button class="firma-tab active" id="tabDibujar_${cid}" onclick="switchFirmaTab('${cid}','dibujar')">
                     <i class="fas fa-pen"></i> Dibujar
@@ -256,8 +231,6 @@ function firmaSeccionHtml(cid) {
                     <i class="fas fa-image"></i> Pegar imagen
                 </button>
             </div>
-
-            <!-- Panel: dibujar -->
             <div id="panelDibujar_${cid}">
                 <div class="firma-label-row">
                     <label>DIBUJA TU FIRMA</label>
@@ -267,8 +240,6 @@ function firmaSeccionHtml(cid) {
                 </div>
                 <canvas id="firmaCanvas_${cid}" class="firma-canvas" width="600" height="180"></canvas>
             </div>
-
-            <!-- Panel: subir/pegar imagen -->
             <div id="panelSubir_${cid}" style="display:none;">
                 <div class="firma-upload-area" id="firmaUploadArea_${cid}"
                      onclick="document.getElementById('firmaFileInput_${cid}').click()"
@@ -287,7 +258,6 @@ function firmaSeccionHtml(cid) {
                     <i class="fas fa-times"></i> Quitar imagen
                 </button>
             </div>
-
             <button class="firma-btn-guardar" onclick="guardarFirma('${cid}', '${ROL}')">
                 <i class="fas fa-pen-nib"></i> Registrar mi firma
             </button>
@@ -295,7 +265,6 @@ function firmaSeccionHtml(cid) {
     </div>`;
 }
 
-/** Cambiar entre pestaña dibujar / subir imagen */
 function switchFirmaTab(cid, modo) {
     document.getElementById(`tabDibujar_${cid}`).classList.toggle('active', modo === 'dibujar');
     document.getElementById(`tabSubir_${cid}`).classList.toggle('active', modo === 'subir');
@@ -304,13 +273,11 @@ function switchFirmaTab(cid, modo) {
     if (modo === 'dibujar') initCanvas(cid);
 }
 
-/** Cargar imagen desde input file */
 function firmaCargarArchivo(event, cid) {
     const file = event.target.files[0];
     if (file) firmaRenderizarImagen(file, cid);
 }
 
-/** Soltar imagen por drag & drop */
 function firmaHandleDrop(event, cid) {
     event.preventDefault();
     document.getElementById(`firmaUploadArea_${cid}`).classList.remove('dragover');
@@ -319,7 +286,6 @@ function firmaHandleDrop(event, cid) {
     else toast('Solo se aceptan imágenes PNG o JPG', 'error');
 }
 
-/** Renderizar imagen elegida en el canvas de vista previa */
 function firmaRenderizarImagen(file, cid) {
     if (file.size > 2 * 1024 * 1024) { toast('La imagen supera 2 MB', 'error'); return; }
     const reader = new FileReader();
@@ -329,7 +295,6 @@ function firmaRenderizarImagen(file, cid) {
             const canvas = document.getElementById(`firmaCanvasImg_${cid}`);
             const ctx    = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // Escalar manteniendo proporción dentro del canvas
             const ratio = Math.min(canvas.width / img.width, canvas.height / img.height);
             const w = img.width * ratio, h = img.height * ratio;
             const x = (canvas.width - w) / 2, y = (canvas.height - h) / 2;
@@ -343,7 +308,6 @@ function firmaRenderizarImagen(file, cid) {
     reader.readAsDataURL(file);
 }
 
-/** Quitar imagen cargada y volver al área de drop */
 function firmaQuitarImagen(cid) {
     const canvas = document.getElementById(`firmaCanvasImg_${cid}`);
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
@@ -387,31 +351,23 @@ async function verContrato(id) {
                 <tr><td><i class="fas fa-calendar"></i> Fecha</td><td>${fecha}</td></tr>
                 ${c.archivo_generado ? `<tr><td><i class="fas fa-file-word"></i> Documento</td><td><span style="color:#16a34a;font-weight:700;"><i class="fas fa-check-circle"></i> Generado</span></td></tr>` : ''}
             </table>
-
             ${c.estado_nombre === 'Aprobado' ? firmaSeccionHtml(c.id) : ''}
-
             <div class="modal-footer-btns">
                 <button class="modal-btn-cerrar" onclick="cerrarModal()"><i class="fas fa-times"></i> Cerrar</button>
                 <button class="modal-btn-descargar" onclick="generarDocumento('${c.id}')">
                     <i class="fas fa-download"></i> Generar y descargar
                 </button>
             </div>`;
-
     } catch (e) {
         modal.querySelector('.modal-body').innerHTML = '<p style="color:red">Error al cargar el contrato</p>';
     }
 
-    // Cargar estado de firmas si el contrato está en estado Aprobado
     setTimeout(() => {
         if (document.getElementById(`firmaSeccion_${id}`)) {
             cargarEstadoFirmas(id);
         }
     }, 120);
 }
-
-/* ══════════════════════════════════════
-   FIRMAS ELECTRÓNICAS
-══════════════════════════════════════ */
 
 async function cargarEstadoFirmas(contratoId) {
     const wrap       = document.getElementById(`firmaEstado_${contratoId}`);
@@ -429,7 +385,6 @@ async function cargarEstadoFirmas(contratoId) {
         const fV = data.firmas.find(f => f.rol === 'Vendedor');
         const fC = data.firmas.find(f => f.rol === 'Comprador');
 
-        // ── Render del estado de cada firma ──
         let html = '<div class="firma-estados">';
         html += firmaStatusHtml('Vendedor', fV);
         html += firmaStatusHtml('Comprador', fC);
@@ -439,20 +394,16 @@ async function cargarEstadoFirmas(contratoId) {
             html += '<div class="firma-completo"><i class="fas fa-check-double"></i> Contrato firmado por ambas partes — propiedad marcada como Vendida</div>';
         }
 
-        // ── Actualizar el estado PRIMERO antes de tocar canvasWrap ──
         wrap.innerHTML = html;
 
         if (data.completo) {
             if (canvasWrap) canvasWrap.style.display = 'none';
         } else {
-            // vendedor → firma como Vendedor
-            // admin    → firma como Comprador (en representación del comprador)
             const firmaActual = (ROL === 'admin') ? fC : fV;
             const yaFirmo     = !!firmaActual;
 
             if (!yaFirmo && canvasWrap) {
                 canvasWrap.style.display = 'block';
-                // Pre-llenar datos si están disponibles como variables PHP en la página
                 const inputNombre = document.getElementById(`firmaNombre_${contratoId}`);
                 if (inputNombre && !inputNombre.value && typeof USUARIO_NOMBRE !== 'undefined') {
                     inputNombre.value = USUARIO_NOMBRE;
@@ -466,13 +417,11 @@ async function cargarEstadoFirmas(contratoId) {
                 canvasWrap.style.display = 'none';
             }
         }
-
     } catch (e) {
         wrap.innerHTML = '<div style="color:#ef4444;font-size:.8rem;">Error al cargar estado de firmas</div>';
     }
 }
 
-/** Helper — genera el HTML de un estado de firma individual */
 function firmaStatusHtml(label, firma) {
     if (firma) {
         const fechaFmt = new Date(firma.fecha_firma).toLocaleDateString('es-SV');
@@ -494,7 +443,6 @@ function firmaStatusHtml(label, firma) {
     </div>`;
 }
 
-/** Inicializar el canvas de dibujo de firma */
 function initCanvas(contratoId) {
     const canvas = document.getElementById(`firmaCanvas_${contratoId}`);
     if (!canvas || canvas._init) return;
@@ -528,7 +476,6 @@ function initCanvas(contratoId) {
     });
     canvas.addEventListener('mouseup',    () => { dibujando = false; });
     canvas.addEventListener('mouseleave', () => { dibujando = false; });
-
     canvas.addEventListener('touchstart', e => { e.preventDefault(); dibujando = true; const p = getPos(e); lastX = p.x; lastY = p.y; }, { passive: false });
     canvas.addEventListener('touchmove',  e => {
         e.preventDefault();
@@ -562,26 +509,22 @@ async function guardarFirma(contratoId, rolUsuario) {
     if (!nombre) { toast('Ingresa el nombre del firmante', 'error'); return; }
     if (!correo) { toast('Ingresa el correo del firmante', 'error'); return; }
 
-    // Detectar modo activo: dibujar o subir imagen
     const tabSubir  = document.getElementById(`tabSubir_${contratoId}`);
     const modoSubir = tabSubir?.classList.contains('active');
 
     let imagenB64 = '';
     if (modoSubir) {
-        // Modo imagen: tomar del canvas de previsualización
         const canvasImg = document.getElementById(`firmaCanvasImg_${contratoId}`);
         if (!canvasImg || canvasImg.style.display === 'none' || canvasVacio(canvasImg)) {
             toast('Selecciona una imagen de firma', 'error'); return;
         }
         imagenB64 = canvasImg.toDataURL('image/png');
     } else {
-        // Modo dibujo: tomar del canvas de dibujo
         const canvas = document.getElementById(`firmaCanvas_${contratoId}`);
         if (!canvas || canvasVacio(canvas)) { toast('Dibuja tu firma en el recuadro', 'error'); return; }
         imagenB64 = canvas.toDataURL('image/png');
     }
 
-    // vendedor → firma como 'Vendedor' | admin → firma como 'Comprador'
     const rolFirma = (rolUsuario === 'admin') ? 'Comprador' : 'Vendedor';
     const fd = new FormData();
     fd.append('contrato_id',     contratoId);
@@ -616,9 +559,6 @@ async function guardarFirma(contratoId, rolUsuario) {
     }
 }
 
-/* ══════════════════════════════════════
-   GENERAR / DESCARGAR DOCUMENTO
-══════════════════════════════════════ */
 function generarDocumento(contratoId) {
     toast('Generando documento...', 'ok');
     const a = document.createElement('a');
@@ -630,9 +570,6 @@ function generarDocumento(contratoId) {
     setTimeout(() => cargarContratos(), 2000);
 }
 
-/* ══════════════════════════════════════
-   ELIMINAR / ANULAR
-══════════════════════════════════════ */
 async function eliminarContrato(id, estado) {
     const accion     = estado === 'Borrador' ? 'eliminar permanentemente' : 'anular';
     const confirmado = await modalConfirmar(`¿Deseas <strong>${accion}</strong> este contrato?`, estado === 'Borrador' ? 'Eliminar' : 'Anular', '#ef4444');
@@ -647,9 +584,6 @@ async function eliminarContrato(id, estado) {
     }
 }
 
-/* ══════════════════════════════════════
-   MODAL HELPER
-══════════════════════════════════════ */
 function crearModal(titulo, bodyHtml) {
     cerrarModal();
     const overlay = document.createElement('div');
@@ -678,9 +612,6 @@ function onEscModal(e) {
     if (e.key === 'Escape') cerrarModal();
 }
 
-/* ══════════════════════════════════════
-   HELPERS GENERALES
-══════════════════════════════════════ */
 function esc(str) {
     if (!str) return '';
     return String(str)
