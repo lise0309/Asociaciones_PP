@@ -853,3 +853,14 @@ tr.tr-pendiente:hover { background:rgba(255,212,90,.1) !important; }
     box-shadow: 0 4px 12px rgba(212, 175, 55, 0.25);
     transform: translateY(-2px);
 }
+/* Admin - Contratos VENDIDOS */
+.tr-vendido {
+    background-color: #fff8e7 !important;
+    border-left: 3px solid #d4af37;
+}
+
+.badge-estado.vendido {
+    background: #d4af37;
+    color: #fff;
+    font-weight: bold;
+}

@@ -162,7 +162,7 @@ $pendientes = (int)$kpis['enviados'] + (int)$kpis['en_revision'];
                             <tbody id="tablaBody">
                                 <tr><td colspan="8">
                                     <div class="loading-state"><div class="loading-spinner"></div>Cargando...</div>
-                                </td></tr>
+                                 </td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -248,17 +248,20 @@ async function cargarTabla() {
         if (!lista.length) {
             tbody.innerHTML = `<tr><td colspan="8">
                 <div class="empty-state"><i class="fas fa-file-contract"></i><p>No hay contratos con esos filtros.</p></div>
-            </td></tr>`;
+             </td></tr>`;
             return;
         }
 
         tbody.innerHTML = lista.map(c => {
-            const color     = c.estado_color || '#6B7280';
             const monto     = new Intl.NumberFormat('en-US',{style:'currency',currency:c.moneda||'USD'}).format(c.monto_acordado);
             const fecha     = new Date(c.fecha_generacion).toLocaleDateString('es-SV',{day:'2-digit',month:'short',year:'numeric'});
             const num       = c.id.substring(0,8).toUpperCase();
             const estado    = c.estado_nombre || '';
             const esAnulado = estado === 'Anulado';
+            const esFirmado = estado === 'Firmado';
+            const badgeClass = esFirmado ? 'badge-estado vendido' : 'badge-estado';
+            const badgeText = esFirmado ? 'VENDIDA' : esc(estado);
+            const trClass = esFirmado ? 'tr-vendido' : (estado === 'Enviado' || estado === 'En revisión') ? 'tr-pendiente' : '';
 
             // Botones del flujo para admin
             let botonesFlujjo = '';
@@ -277,9 +280,6 @@ async function cargarTabla() {
                 </button>`;
             }
 
-            // Resaltar fila si está pendiente
-            const trClass = (estado === 'Enviado' || estado === 'En revisión') ? 'tr-pendiente' : '';
-
             return `<tr class="${trClass}">
                 <td><span class="td-num">#${num}</span></td>
                 <td>
@@ -289,7 +289,7 @@ async function cargarTabla() {
                 <td><div class="td-propiedad" title="${esc(c.titulo_anuncio)}">${esc(c.titulo_anuncio)}</div></td>
                 <td><div class="td-vendedor">${esc(c.vendedor_nombre ?? '—')}</div></td>
                 <td><span class="td-monto">${monto}</span></td>
-                <td><span class="badge-estado">${esc(estado)}</span></td>
+                <td><span class="${badgeClass}">${badgeText}</span></td>
                 <td><span class="td-fecha">${fecha}</span></td>
                 <td>
                     <div class="td-acciones">
@@ -306,7 +306,7 @@ async function cargarTabla() {
                         </button>` : ''}
                     </div>
                 </td>
-            </tr>`;
+             </tr>`;
         }).join('');
 
     } catch(e) {
