@@ -211,6 +211,71 @@ try {
     exit;
   }
 
+  // ══════════════════════════════════════
+  // OPCIONES POR CATEGORÍA
+  // ══════════════════════════════════════
+  if ($accion === 'opciones' && $metodo === 'GET') {
+    $cat  = $_GET['categoria'] ?? '';
+    $stmt = $db->prepare("
+      SELECT id, nombre_opcion
+      FROM opciones_sistema
+      WHERE categoria = :cat AND disponible = 1
+      ORDER BY nombre_opcion ASC
+    ");
+    $stmt->execute([':cat' => $cat]);
+    echo json_encode(['ok' => true, 'opciones' => $stmt->fetchAll()]);
+    exit;
+  }
+
+  // ══════════════════════════════════════
+  // EDITAR PROPIEDAD
+  // ══════════════════════════════════════
+  if ($accion === 'editar' && $metodo === 'POST') {
+    $id = $_POST['id'] ?? '';
+    if (!$id) { echo json_encode(['ok' => false, 'msg' => 'ID inválido.']); exit; }
+
+    $campos = [
+      'titulo_anuncio',
+      'precio_pedido',
+      'tipo_inmueble_id',
+      'tipo_negocio_id',
+      'estado_publicacion_id',
+      'departamento',
+      'municipio',
+      'direccion_exacta',
+      'descripcion_detallada',
+      'num_habitaciones',
+      'num_banos',
+      'metros_construccion',
+      'metros_terreno',
+      'tiene_estacionamiento',
+      'tiene_piscina',
+      'es_anuncio_destacado',
+    ];
+
+    $sets   = [];
+    $params = [':id' => $id];
+
+    foreach ($campos as $campo) {
+      if (isset($_POST[$campo])) {
+        $sets[]          = "$campo = :$campo";
+        $params[":$campo"] = $_POST[$campo] === '' ? null : $_POST[$campo];
+      }
+    }
+
+    if (empty($sets)) {
+      echo json_encode(['ok' => false, 'msg' => 'Nada que actualizar.']);
+      exit;
+    }
+
+    $sets[] = 'fecha_actualizacion = NOW()';
+    $sql    = 'UPDATE propiedades SET ' . implode(', ', $sets) . ' WHERE id = :id';
+    $ok     = $db->prepare($sql)->execute($params);
+
+    echo json_encode(['ok' => $ok, 'msg' => $ok ? 'Propiedad actualizada correctamente.' : 'Error al actualizar.']);
+    exit;
+  }
+
   echo json_encode(['ok' => false, 'msg' => 'Acción no válida.']);
 
 } catch (Exception $e) {

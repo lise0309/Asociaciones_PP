@@ -195,6 +195,28 @@ if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
     </div>
 </div>
 
+<!-- Modal editar propiedad -->
+<div class="modal-prop-overlay" id="modalEditarOverlay">
+    <div class="modal-prop modal-prop-xl">
+        <div class="modal-prop-head">
+            <span><i class="fas fa-edit"></i> Editar propiedad</span>
+            <button id="modalEditarCerrar"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-prop-body" id="editarBody">
+            <div class="loading-spinner"></div>
+        </div>
+        <input type="hidden" id="editarId">
+        <div class="modal-prop-footer">
+            <button class="btn-prop-cancel" id="btnCancelarEditar">
+                <i class="fas fa-times"></i> Cancelar
+            </button>
+            <button class="btn-prop-confirm" id="btnGuardarEditar">
+                <i class="fas fa-save"></i> Guardar cambios
+            </button>
+        </div>
+    </div>
+</div>
+
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script src="../assets/js/panel.js"></script>

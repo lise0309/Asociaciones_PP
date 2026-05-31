@@ -24,6 +24,7 @@
   const modalDetalleOverlay  = document.getElementById('modalDetalleOverlay');
   const modalEstadoOverlay   = document.getElementById('modalEstadoOverlay');
   const modalEliminarOverlay = document.getElementById('modalEliminarOverlay');
+  const modalEditarOverlay   = document.getElementById('modalEditarOverlay');
 
   let debounceTimer;
 
@@ -118,6 +119,9 @@
             <button class="btn-prop-accion btn-ver btn-ver-prop" data-id="${p.id}" title="Ver detalle">
               <i class="fas fa-eye"></i>
             </button>
+            <button class="btn-prop-accion btn-edit btn-editar-prop" data-id="${p.id}" title="Editar">
+              <i class="fas fa-edit"></i>
+            </button>
             <button class="btn-prop-accion btn-estado btn-estado-prop" data-id="${p.id}" data-titulo="${esc(p.titulo_anuncio)}" title="Cambiar estado">
               <i class="fas fa-exchange-alt"></i>
             </button>
@@ -136,6 +140,9 @@
     tablaBody.querySelectorAll('.btn-ver-prop').forEach(btn =>
       btn.addEventListener('click', () => abrirDetalle(btn.dataset.id))
     );
+    tablaBody.querySelectorAll('.btn-editar-prop').forEach(btn =>
+      btn.addEventListener('click', () => abrirEditar(btn.dataset.id))
+    );
     tablaBody.querySelectorAll('.btn-estado-prop').forEach(btn =>
       btn.addEventListener('click', () => abrirModalEstado(btn.dataset.id, btn.dataset.titulo))
     );
@@ -143,6 +150,203 @@
       btn.addEventListener('click', () => abrirModalEliminar(btn.dataset.id, btn.dataset.titulo))
     );
   }
+
+  /* ════════════════════════════════════════
+     MODAL EDITAR PROPIEDAD
+  ════════════════════════════════════════ */
+  async function abrirEditar(id) {
+    const body = document.getElementById('editarBody');
+    body.innerHTML = '<div style="text-align:center;padding:32px;"><div class="loading-spinner" style="margin:0 auto;"></div></div>';
+    abrirModal(modalEditarOverlay);
+
+    try {
+      const res  = await fetch(`${API}?accion=detalle&id=${id}`);
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.msg);
+
+      const p = data.propiedad;
+      document.getElementById('editarId').value = id;
+
+      // Cargar opciones de selects en paralelo
+      const [tiposRes, negociosRes, estadosRes] = await Promise.all([
+        fetch(`${API}?accion=opciones&categoria=tipo_inmueble`),
+        fetch(`${API}?accion=opciones&categoria=tipo_negocio`),
+        fetch(`${API}?accion=opciones&categoria=estado_publicacion`),
+      ]);
+      const [tiposData, negociosData, estadosData] = await Promise.all([
+        tiposRes.json(), negociosRes.json(), estadosRes.json()
+      ]);
+
+      const optsTipo    = tiposData.opciones   || [];
+      const optsNegocio = negociosData.opciones || [];
+      const optsEstado  = estadosData.opciones  || [];
+
+      body.innerHTML = `
+        <div class="editar-grid">
+          <div class="editar-col">
+            <div class="editar-section-label"><i class="fas fa-info-circle"></i> Información general</div>
+
+            <div class="form-group-editar">
+              <label>Título del anuncio <span class="req">*</span></label>
+              <input type="text" id="eTitulo" class="form-input-editar" value="${esc(p.titulo_anuncio || '')}">
+            </div>
+
+            <div class="editar-row-2">
+              <div class="form-group-editar">
+                <label>Tipo de inmueble</label>
+                <select id="eTipoInmueble" class="form-input-editar">
+                  <option value="">Seleccionar...</option>
+                  ${optsTipo.map(o => `<option value="${o.id}" ${o.id == p.tipo_inmueble_id ? 'selected' : ''}>${esc(o.nombre_opcion)}</option>`).join('')}
+                </select>
+              </div>
+              <div class="form-group-editar">
+                <label>Tipo de negocio</label>
+                <select id="eTipoNegocio" class="form-input-editar">
+                  <option value="">Seleccionar...</option>
+                  ${optsNegocio.map(o => `<option value="${o.id}" ${o.id == p.tipo_negocio_id ? 'selected' : ''}>${esc(o.nombre_opcion)}</option>`).join('')}
+                </select>
+              </div>
+            </div>
+
+            <div class="editar-row-2">
+              <div class="form-group-editar">
+                <label>Precio pedido <span class="req">*</span></label>
+                <input type="number" id="ePrecio" class="form-input-editar" value="${p.precio_pedido || ''}">
+              </div>
+              <div class="form-group-editar">
+                <label>Estado</label>
+                <select id="eEstado" class="form-input-editar">
+                  <option value="">Seleccionar...</option>
+                  ${optsEstado.map(o => `<option value="${o.id}" ${o.id == p.estado_publicacion_id ? 'selected' : ''}>${esc(o.nombre_opcion)}</option>`).join('')}
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group-editar">
+              <label>Descripción detallada</label>
+              <textarea id="eDescripcion" class="form-input-editar" rows="4">${esc(p.descripcion_detallada || '')}</textarea>
+            </div>
+          </div>
+
+          <div class="editar-col">
+            <div class="editar-section-label"><i class="fas fa-map-marker-alt"></i> Ubicación</div>
+
+            <div class="editar-row-2">
+              <div class="form-group-editar">
+                <label>Departamento</label>
+                <input type="text" id="eDepartamento" class="form-input-editar" value="${esc(p.departamento || '')}">
+              </div>
+              <div class="form-group-editar">
+                <label>Municipio</label>
+                <input type="text" id="eMunicipio" class="form-input-editar" value="${esc(p.municipio || '')}">
+              </div>
+            </div>
+
+            <div class="form-group-editar">
+              <label>Dirección exacta</label>
+              <input type="text" id="eDireccion" class="form-input-editar" value="${esc(p.direccion_exacta || '')}">
+            </div>
+
+            <div class="editar-section-label" style="margin-top:14px;"><i class="fas fa-home"></i> Características</div>
+
+            <div class="editar-row-2">
+              <div class="form-group-editar">
+                <label>Habitaciones</label>
+                <input type="number" id="eHabitaciones" class="form-input-editar" value="${p.num_habitaciones || ''}">
+              </div>
+              <div class="form-group-editar">
+                <label>Baños</label>
+                <input type="number" id="eBanos" class="form-input-editar" value="${p.num_banos || ''}">
+              </div>
+            </div>
+
+            <div class="editar-row-2">
+              <div class="form-group-editar">
+                <label>Metros construcción</label>
+                <input type="number" id="eMetrosConstruccion" class="form-input-editar" value="${p.metros_construccion || ''}">
+              </div>
+              <div class="form-group-editar">
+                <label>Metros terreno</label>
+                <input type="number" id="eMetrosTerreno" class="form-input-editar" value="${p.metros_terreno || ''}">
+              </div>
+            </div>
+
+            <div class="editar-row-2">
+              <div class="form-group-editar">
+                <label class="check-editar">
+                  <input type="checkbox" id="eEstacionamiento" ${p.tiene_estacionamiento == 1 ? 'checked' : ''}>
+                  <span>Estacionamiento</span>
+                </label>
+              </div>
+              <div class="form-group-editar">
+                <label class="check-editar">
+                  <input type="checkbox" id="ePiscina" ${p.tiene_piscina == 1 ? 'checked' : ''}>
+                  <span>Piscina</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group-editar">
+              <label class="check-editar">
+                <input type="checkbox" id="eDestacado" ${p.es_anuncio_destacado == 1 ? 'checked' : ''}>
+                <span><i class="fas fa-star" style="color:var(--gold-dark);margin-right:4px;"></i> Anuncio destacado</span>
+              </label>
+            </div>
+          </div>
+        </div>`;
+
+    } catch(err) {
+      body.innerHTML = `<p style="color:#ef4444;padding:16px;">Error: ${err.message}</p>`;
+    }
+  }
+
+  document.getElementById('btnGuardarEditar')?.addEventListener('click', async () => {
+    const id = document.getElementById('editarId').value;
+    if (!id) return;
+
+    const titulo = document.getElementById('eTitulo')?.value?.trim();
+    if (!titulo) { toast('El título es obligatorio.', 'error'); return; }
+
+    const fd = new FormData();
+    fd.append('id',                   id);
+    fd.append('titulo_anuncio',       titulo);
+    fd.append('precio_pedido',        document.getElementById('ePrecio')?.value || '');
+    fd.append('tipo_inmueble_id',     document.getElementById('eTipoInmueble')?.value || '');
+    fd.append('tipo_negocio_id',      document.getElementById('eTipoNegocio')?.value || '');
+    fd.append('estado_publicacion_id',document.getElementById('eEstado')?.value || '');
+    fd.append('departamento',         document.getElementById('eDepartamento')?.value || '');
+    fd.append('municipio',            document.getElementById('eMunicipio')?.value || '');
+    fd.append('direccion_exacta',     document.getElementById('eDireccion')?.value || '');
+    fd.append('descripcion_detallada',document.getElementById('eDescripcion')?.value || '');
+    fd.append('num_habitaciones',     document.getElementById('eHabitaciones')?.value || '');
+    fd.append('num_banos',            document.getElementById('eBanos')?.value || '');
+    fd.append('metros_construccion',  document.getElementById('eMetrosConstruccion')?.value || '');
+    fd.append('metros_terreno',       document.getElementById('eMetrosTerreno')?.value || '');
+    fd.append('tiene_estacionamiento',document.getElementById('eEstacionamiento')?.checked ? '1' : '0');
+    fd.append('tiene_piscina',        document.getElementById('ePiscina')?.checked ? '1' : '0');
+    fd.append('es_anuncio_destacado', document.getElementById('eDestacado')?.checked ? '1' : '0');
+
+    const btn = document.getElementById('btnGuardarEditar');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+    try {
+      const res  = await fetch(`${API}?accion=editar`, { method: 'POST', body: fd });
+      const data = await res.json();
+      cerrarModal(modalEditarOverlay);
+      toast(data.msg, data.ok ? 'ok' : 'error');
+      if (data.ok) cargar();
+    } catch {
+      toast('Error de conexión.', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-save"></i> Guardar cambios';
+    }
+  });
+
+  document.getElementById('modalEditarCerrar')?.addEventListener('click',   () => cerrarModal(modalEditarOverlay));
+  document.getElementById('btnCancelarEditar')?.addEventListener('click',   () => cerrarModal(modalEditarOverlay));
+  modalEditarOverlay?.addEventListener('click', e => { if (e.target === modalEditarOverlay) cerrarModal(modalEditarOverlay); });
 
   /* ════════════════════════════════════════
      MODAL VER DETALLE

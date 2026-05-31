@@ -3,8 +3,6 @@
    Paleta: Navy #1A1953 · Dorado #FFD45A · Blanco #FFFCFB
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700&family=Inter:wght@300;400;500;600;700&display=swap');
-
 :root {
   --navy:      #1A1953;
   --navy-dark: #0F0F2E;
@@ -21,23 +19,6 @@
   --t:         .18s cubic-bezier(.4,0,.2,1);
   --font-d:    'Playfair Display',serif;
   --font-b:    'Inter',sans-serif;
-  --font-num:  var(--font-d);
-}
-
-/* Números elegantes */
-.stat-num,
-.kpi-valor,
-.dash-monto,
-.dash-precio,
-.precio-overlay,
-.det-precio,
-.td-monto,
-.td-num,
-.resultados-count strong,
-.prop-codigo {
-  font-family: var(--font-num);
-  font-variant-numeric: lining-nums tabular-nums;
-  letter-spacing: .01em;
 }
 
 /* ── KPIs ── */
@@ -411,4 +392,81 @@
   font-size:.62rem; font-weight:800;
   text-transform:uppercase; letter-spacing:.06em;
   background:var(--navy); color:var(--gold);
+}
+
+
+/* ════════════════════════════════════════
+   MODAL EDITAR PROPIEDAD
+════════════════════════════════════════ */
+.modal-prop-xl { max-width: 860px; }
+
+.editar-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+@media(max-width:700px) { .editar-grid { grid-template-columns: 1fr; } }
+
+.editar-col { display: flex; flex-direction: column; gap: 0; }
+
+.editar-section-label {
+  font-size: .62rem; font-weight: 800;
+  color: var(--muted); text-transform: uppercase;
+  letter-spacing: .08em; border-left: 3px solid var(--gold);
+  padding-left: 8px; margin-bottom: 12px;
+  display: flex; align-items: center; gap: 6px;
+}
+.editar-section-label i { color: var(--gold-dark); font-size: .75rem; }
+
+.editar-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.form-group-editar {
+  display: flex; flex-direction: column; gap: 5px;
+  margin-bottom: 12px;
+}
+.form-group-editar label {
+  font-size: .62rem; font-weight: 800;
+  color: var(--navy); text-transform: uppercase; letter-spacing: .07em;
+}
+.form-group-editar .req { color: var(--gold-dark); }
+
+.form-input-editar {
+  padding: 8px 11px;
+  border: 1.5px solid var(--border);
+  font-family: var(--font-b); font-size: .85rem;
+  color: var(--text); background: var(--white);
+  outline: none; transition: border-color var(--t);
+  width: 100%;
+}
+.form-input-editar:focus { border-color: var(--navy); }
+.form-input-editar::placeholder { color: #b8b5cc; }
+textarea.form-input-editar { resize: vertical; min-height: 90px; }
+select.form-input-editar {
+  appearance: none; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%231A1953'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 9px center; background-size: 13px;
+  padding-right: 30px;
+}
+
+.check-editar {
+  display: flex; align-items: center; gap: 8px;
+  font-size: .82rem; color: var(--muted);
+  cursor: pointer; user-select: none;
+  font-weight: 600; text-transform: none; letter-spacing: 0;
+}
+.check-editar input[type="checkbox"] {
+  width: 16px; height: 16px;
+  accent-color: var(--navy); cursor: pointer;
+}
+
+/* Botón editar en acciones */
+.btn-edit {
+  background: var(--navy-soft);
+  color: var(--navy);
+  border: 1.5px solid var(--border);
+}
+.btn-edit:hover {
+  background: var(--navy);
+  color: var(--gold);
+  border-color: var(--navy);
 }
