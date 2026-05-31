@@ -107,10 +107,131 @@ $base_path = '/Asociaciones_PP/'; // Ruta absoluta desde la raíz
         </nav>
         <div class="footer-devcore">
           Desarrollado por
-          <a href="#" class="devcore-link">DevCore</a>
+          <a href="#" class="devcore-link devcore-modal-trigger">DevCore</a>
         </div>
       </div>
     </div>
   </div>
 
 </footer>
+<!-- ══ MODAL EQUIPO DEVCORE ══ -->
+<div class="footer-modal-overlay" id="devcoreModalOverlay" aria-hidden="true">
+  <div class="footer-modal" role="dialog" aria-modal="true" aria-labelledby="devcoreModalTitle">
+
+    <!-- Partículas flotantes (se generan por JS) -->
+    <div class="footer-modal-particles" id="devcoreParticles"></div>
+
+    <!-- Header -->
+    <div class="footer-modal-heading">
+      <button class="footer-modal-close" type="button" aria-label="Cerrar" id="devcoreModalClose">
+        <span>&times;</span>
+      </button>
+      <span class="footer-modal-badge">
+        <i class="fas fa-code"></i> Equipo DevCore
+      </span>
+      <h2 id="devcoreModalTitle">Desarrolla<em>dores</em></h2>
+      <p>Creado por un equipo comprometido con diseño elegante y experiencia premium.</p>
+    </div>
+
+    <!-- Equipo -->
+    <ul class="footer-modal-team">
+      <li>
+        <div class="footer-modal-avatar">AP</div>
+        <div class="footer-modal-member-info">
+          <div class="footer-modal-member-name">Arturo Pocasangre</div>
+          <div class="footer-modal-member-role">Full Stack Developer</div>
+        </div>
+        <span class="footer-modal-num">01</span>
+      </li>
+      <li>
+        <div class="footer-modal-avatar">KA</div>
+        <div class="footer-modal-member-info">
+          <div class="footer-modal-member-name">Kenia Arteaga</div>
+          <div class="footer-modal-member-role">Full Stack Developer</div>
+        </div>
+        <span class="footer-modal-num">02</span>
+      </li>
+      <li>
+        <div class="footer-modal-avatar">CG</div>
+        <div class="footer-modal-member-info">
+          <div class="footer-modal-member-name">Cristopher Gimenes</div>
+          <div class="footer-modal-member-role">Frontend Developer</div>
+        </div>
+        <span class="footer-modal-num">03</span>
+      </li>
+      <li>
+        <div class="footer-modal-avatar">AG</div>
+        <div class="footer-modal-member-info">
+          <div class="footer-modal-member-name">Álvaro Gamez</div>
+          <div class="footer-modal-member-role">Frontend Developer</div>
+        </div>
+        <span class="footer-modal-num">04</span>
+      </li>
+      <li>
+        <div class="footer-modal-avatar">EL</div>
+        <div class="footer-modal-member-info">
+          <div class="footer-modal-member-name">Eduardo Larreynaga</div>
+          <div class="footer-modal-member-role">Frontend Developer</div>
+        </div>
+        <span class="footer-modal-num">05</span>
+      </li>
+    </ul>
+
+    <!-- Footer del modal -->
+    <div class="footer-modal-foot">
+      <span><span class="footer-modal-pulse"></span>PP Bienes Raíces &copy; 2026</span>
+      <span>v1.0.0</span>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  const trigger = document.querySelector('.devcore-modal-trigger');
+  const overlay = document.getElementById('devcoreModalOverlay');
+  const closeBtn = document.getElementById('devcoreModalClose');
+
+  /* ── Partículas ── */
+  const pc = document.getElementById('devcoreParticles');
+  for (let i = 0; i < 18; i++) {
+    const d = document.createElement('div');
+    d.className = 'footer-modal-particle';
+    const size = 1 + Math.random() * 2;
+    d.style.cssText =
+      'left:' + (Math.random() * 100) + '%;' +
+      'width:' + size + 'px;height:' + size + 'px;' +
+      'animation-duration:' + (4 + Math.random() * 6) + 's;' +
+      'animation-delay:' + (Math.random() * 5) + 's;' +
+      'opacity:' + (.2 + Math.random() * .4) + ';';
+    pc.appendChild(d);
+  }
+
+  /* ── Abrir / cerrar ── */
+  function abrirDevcoreModal(event) {
+    event.preventDefault();
+    overlay.setAttribute('aria-hidden', 'false');
+    overlay.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function cerrarDevcoreModal() {
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+
+  if (trigger && overlay && closeBtn) {
+    trigger.addEventListener('click', abrirDevcoreModal);
+    closeBtn.addEventListener('click', cerrarDevcoreModal);
+    overlay.addEventListener('click', (event) => {
+      if (event.target === overlay) cerrarDevcoreModal();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && overlay.classList.contains('is-open')) {
+        cerrarDevcoreModal();
+      }
+    });
+  }
+})();
+</script>
