@@ -3,6 +3,8 @@
    Paleta: Navy #1A1953 · Dorado #FFD45A · Blanco #FFFCFB
    ============================================================ */
 
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700&family=Inter:wght@300;400;500;600;700&display=swap');
+
 :root {
   --navy:      #1A1953;
   --navy-dark: #0F0F2E;
@@ -19,6 +21,23 @@
   --t:         .18s cubic-bezier(.4,0,.2,1);
   --font-d:    'Playfair Display',serif;
   --font-b:    'Inter',sans-serif;
+  --font-num:  var(--font-d);
+}
+
+/* Números elegantes */
+.stat-num,
+.kpi-valor,
+.dash-monto,
+.dash-precio,
+.precio-overlay,
+.det-precio,
+.td-monto,
+.td-num,
+.resultados-count strong,
+.prop-codigo {
+  font-family: var(--font-num);
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: .01em;
 }
 
 /* ── KPIs ── */

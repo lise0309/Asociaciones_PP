@@ -53,6 +53,8 @@
 }
 
 .kpi-value {
+    font-family: var(--font-d);
+    font-variant-numeric: lining-nums tabular-nums;
     font-size: 28px;
     font-weight: 700;
     color: #1A1953;
@@ -160,6 +162,8 @@
 }
 
 .monto {
+    font-family: var(--font-d);
+    font-variant-numeric: lining-nums tabular-nums;
     font-weight: 700;
     color: #1A1953;
 }

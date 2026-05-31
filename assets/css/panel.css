@@ -33,6 +33,7 @@
   --r-sm: 8px; --r-md: 12px; --r-lg: 18px; --r-xl: 24px; --r-full: 9999px;
   --font-d: 'Playfair Display', serif;
   --font-b: 'Inter', sans-serif;
+  --font-num: var(--font-d);
   --t: .22s cubic-bezier(.4,0,.2,1);
 }
 
@@ -48,6 +49,22 @@ body {
 a { text-decoration: none; color: inherit; }
 ul { list-style: none; }
 img { max-width: 100%; height: auto; display: block; }
+
+/* Números más elegantes y profesionales */
+.stat-num,
+.kpi-valor,
+.dash-monto,
+.dash-precio,
+.precio-overlay,
+.det-precio,
+.td-monto,
+.td-num,
+.resultados-count strong,
+.prop-codigo {
+  font-family: var(--font-num);
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: .01em;
+}
 
 /* ════════════════════════════════════════
    LAYOUT GENERAL

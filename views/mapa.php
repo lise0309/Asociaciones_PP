@@ -152,6 +152,7 @@
     .mapa-res-precio {
       font-size:.85rem; font-weight:800; color:var(--gold);
       font-family:var(--font-d);
+      font-variant-numeric: lining-nums tabular-nums;
     }
     .mapa-res-badge {
       font-size:.58rem; font-weight:800; text-transform:uppercase;
@@ -176,7 +177,7 @@
     /* Popup personalizado */
     .popup-prop { font-family:var(--font-b); min-width:200px; }
     .popup-prop-titulo { font-weight:700; font-size:.875rem; color:var(--navy); margin-bottom:4px; }
-    .popup-prop-precio { font-weight:800; font-size:1rem; color:var(--navy); margin-bottom:6px; }
+    .popup-prop-precio { font-weight:800; font-size:1rem; color:var(--navy); margin-bottom:6px; font-family:var(--font-d); font-variant-numeric: lining-nums tabular-nums; }
     .popup-prop-loc { font-size:.75rem; color:var(--muted); margin-bottom:8px; display:flex; align-items:center; gap:4px; }
     .popup-prop-btn {
       display:block; text-align:center; padding:7px;
@@ -191,7 +192,8 @@
       background:var(--navy); border:2px solid var(--gold);
       padding:3px 8px; font-size:.65rem; font-weight:800;
       color:var(--gold); white-space:nowrap; box-shadow:2px 2px 0 rgba(0,0,0,.3);
-      position:relative; font-family:var(--font-b);
+      position:relative; font-family:var(--font-d);
+      font-variant-numeric: lining-nums tabular-nums;
     }
     .marker-prop::after {
       content:''; position:absolute; bottom:-7px; left:50%; transform:translateX(-50%);
@@ -321,7 +323,7 @@
       iconCreateFunction: (cluster) => {
         const n = cluster.getChildCount();
         return L.divIcon({
-          html: `<div style="background:var(--navy,#1A1953);color:#FFD45A;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;font-family:Inter,sans-serif;border:2px solid #FFD45A;box-shadow:3px 3px 0 rgba(0,0,0,.3);">${n}</div>`,
+          html: `<div style="background:var(--navy,#1A1953);color:#FFD45A;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;font-family:var(--font-d,Inter,sans-serif);font-variant-numeric:lining-nums tabular-nums;border:2px solid #FFD45A;box-shadow:3px 3px 0 rgba(0,0,0,.3);">${n}</div>`,
           className: '', iconSize: [36,36], iconAnchor: [18,18],
         });
       },

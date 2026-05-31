@@ -3,6 +3,22 @@
    Estilos específicos del dashboard — complementa panel.css
    ============================================================ */
 
+/* Números elegantes */
+.stat-num,
+.kpi-valor,
+.dash-monto,
+.dash-precio,
+.precio-overlay,
+.det-precio,
+.td-monto,
+.td-num,
+.resultados-count strong,
+.prop-codigo {
+  font-family: var(--font-d);
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: .01em;
+}
+
 /* ── Sobreescribir KPIs de panel.css al estilo flat ── */
 .kpi-grid { gap:6px; margin-bottom:6px; }
 

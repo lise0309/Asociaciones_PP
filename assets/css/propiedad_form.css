@@ -122,6 +122,7 @@
   border:1.5px solid var(--border);
   font-size:.875rem; color:var(--text);
   background:var(--white); font-family:var(--font-b);
+  font-variant-numeric: lining-nums tabular-nums;
   transition:border-color var(--t); outline:none;
 }
 .form-control:hover { border-color:rgba(26,25,83,.3); }
@@ -266,7 +267,8 @@ select.form-control:focus { border-color:var(--gold); }
 .mapa-inner p { font-size:.85rem; font-weight:700; color:var(--navy); margin:0; }
 .mapa-inner small {
   font-size:.7rem; color:var(--muted);
-  font-family:'Courier New',monospace;
+  font-family:var(--font-d);
+  font-variant-numeric: lining-nums tabular-nums;
   background:rgba(26,25,83,.08); padding:3px 10px;
   display:flex; align-items:center; gap:5px;
 }

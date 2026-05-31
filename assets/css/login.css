@@ -23,8 +23,28 @@
   --success:    #22C55E;
   --font-d: 'Playfair Display', serif;
   --font-b: 'Inter', sans-serif;
+  --font-num: var(--font-d);
   --t: .26s cubic-bezier(.4,0,.2,1);
   --r-sm: 8px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px; --r-full: 9999px;
+}
+
+/* Números elegantes */
+.stat-num,
+.kpi-valor,
+.dash-monto,
+.dash-precio,
+.precio-overlay,
+.det-precio,
+.td-monto,
+.td-num,
+.resultados-count strong,
+.prop-codigo,
+.mapa-res-precio,
+.popup-prop-precio,
+.marker-prop {
+  font-family: var(--font-num);
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: .01em;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
