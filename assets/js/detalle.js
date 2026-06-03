@@ -307,9 +307,7 @@
     }).addTo(mapaInst);
 
     const icono = L.divIcon({
-      html:`<div style="width:44px;height:44px;border-radius:50% 50% 50% 0;background:#1A1953;border:3px solid #FFD45A;transform:rotate(-45deg);box-shadow:0 4px 14px rgba(26,25,83,.35);display:flex;align-items:center;justify-content:center;">
-              <span style="transform:rotate(45deg);font-size:1.1rem;">🏠</span>
-            </div>`,
+      html:`<div style="width:44px;height:44px;border-radius:50% 50% 50% 0;background:#1A1953;border:3px solid #FFD45A;transform:rotate(-45deg);box-shadow:0 4px 14px rgba(26,25,83,.35);"></div>`,
       className:'', iconSize:[44,44], iconAnchor:[22,44], popupAnchor:[0,-44],
     });
 

@@ -89,8 +89,23 @@ if ($act === 'estado' && $_SERVER['REQUEST_METHOD']==='POST') {
                  ->execute([':est'=>$estadoId, ':id'=>$id]);
 
         // Obtener nombre del nuevo estado para historial
-        $nombre = $db->query("SELECT nombre_opcion FROM opciones_sistema WHERE id=$estadoId LIMIT 1")->fetchColumn();
+        $stmtNombre = $db->prepare("SELECT nombre_opcion FROM opciones_sistema WHERE id=:est LIMIT 1");
+        $stmtNombre->execute([':est'=>$estadoId]);
+        $nombre = $stmtNombre->fetchColumn();
         if ($ok) $model->historial($id, "Estado cambiado a: $nombre", $uid);
+
+        // Si el nuevo estado es "Firmado", marcar la propiedad como Vendida
+        if ($ok && $nombre === 'Firmado') {
+            $contrato = $model->getById($id);
+            if ($contrato && !empty($contrato['propiedad_id'])) {
+                $estadoVendida = $db->query("SELECT id FROM opciones_sistema WHERE categoria='estado_publicacion' AND nombre_opcion='Vendida' LIMIT 1")->fetchColumn();
+                if ($estadoVendida) {
+                    $db->prepare("UPDATE propiedades SET estado_publicacion_id=:est WHERE id=:pid")
+                       ->execute([':est'=>$estadoVendida, ':pid'=>$contrato['propiedad_id']]);
+                    $model->historial($id, 'Propiedad marcada como Vendida por cambio de estado del contrato', $uid);
+                }
+            }
+        }
 
         echo json_encode(['ok'=>$ok]);
     } catch(Exception $e) {

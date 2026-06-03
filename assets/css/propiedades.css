@@ -30,24 +30,27 @@
 @media(max-width:900px) { .kpi-grid { grid-template-columns:repeat(2,1fr); } }
 
 .kpi-card {
-  background:var(--white);
-  border:1px solid rgba(26,25,83,.12);
-  padding:16px 18px;
-  display:flex; align-items:center; gap:14px;
+  background:var(--white) !important;
+  border:1px solid rgba(26,25,83,.12) !important;
+  border-radius:0 !important;
+  padding:16px 18px !important;
+  display:flex !important; align-items:center !important; gap:14px !important;
+  box-shadow:none !important;
   transition:box-shadow var(--t), transform var(--t);
 }
-.kpi-card:hover { box-shadow:4px 4px 0 var(--navy); transform:translate(-2px,-2px); }
+.kpi-card:hover { box-shadow:4px 4px 0 var(--navy) !important; transform:translate(-2px,-2px); }
 
 .kpi-icon {
-  width:44px; height:44px; flex-shrink:0;
+  width:44px !important; height:44px !important; flex-shrink:0;
+  border-radius:0 !important;
   display:flex; align-items:center; justify-content:center;
   font-size:1.2rem;
 }
-.kpi-icon-navy { background:var(--navy); color:var(--gold); }
-.kpi-icon-gold { background:var(--gold); color:var(--navy-dark); }
+.kpi-icon-navy { background:var(--navy) !important; color:var(--gold) !important; }
+.kpi-icon-gold { background:var(--gold) !important; color:var(--navy-dark) !important; }
 
 .kpi-label { font-size:.6rem; font-weight:800; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
-.kpi-valor { font-family:var(--font-d); font-size:1.5rem; font-weight:800; color:var(--navy); line-height:1.1; }
+.kpi-valor { font-family:var(--font-d); font-variant-numeric:lining-nums tabular-nums; letter-spacing:.01em; font-size:1.5rem; font-weight:800; color:var(--navy); line-height:1.1; }
 
 /* ── Card principal ── */
 .prop-card {
@@ -147,7 +150,7 @@
 /* Celdas especiales */
 .td-titulo { font-weight:700; color:var(--navy); font-size:.85rem; max-width:200px; }
 .td-tipo   { font-size:.75rem; color:var(--muted); }
-.td-precio { font-family:var(--font-d); font-weight:800; color:var(--navy); white-space:nowrap; }
+.td-precio { font-family:var(--font-d); font-variant-numeric:lining-nums tabular-nums; letter-spacing:.01em; font-weight:800; color:var(--navy); white-space:nowrap; }
 .td-loc    { font-size:.75rem; color:var(--muted); white-space:nowrap; }
 .td-vendedor { font-size:.78rem; color:var(--navy); font-weight:600; }
 
@@ -339,7 +342,7 @@
   text-transform:uppercase; letter-spacing:.08em; margin-bottom:3px;
 }
 .prop-detalle-label i { color:var(--gold-dark); margin-right:4px; font-size:.65rem; }
-.prop-detalle-val { font-size:.875rem; font-weight:600; color:var(--navy); }
+.prop-detalle-val { font-family:var(--font-d); font-variant-numeric:lining-nums tabular-nums; font-size:.875rem; font-weight:700; color:var(--navy); }
 
 .prop-detalle-desc {
   background:var(--navy-soft);

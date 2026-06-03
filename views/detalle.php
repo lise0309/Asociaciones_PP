@@ -58,9 +58,9 @@
 
   <!-- Lightbox -->
   <div class="lightbox" id="lightbox">
-    <button class="lb-close" id="lbClose">✕</button>
-    <button class="lb-prev"  id="lbPrev">‹</button>
-    <button class="lb-next"  id="lbNext">›</button>
+    <button class="lb-close" id="lbClose"><i class="fas fa-times"></i></button>
+    <button class="lb-prev"  id="lbPrev"><i class="fas fa-chevron-left"></i></button>
+    <button class="lb-next"  id="lbNext"><i class="fas fa-chevron-right"></i></button>
     <img class="lb-img" id="lbImg" src="" alt="">
     <div class="lb-counter" id="lbCounter"></div>
   </div>
